@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -2313,186 +2314,8 @@
               <div class="chart-wrap"><canvas id="chart-type"></canvas></div>
             </div>
           </div>
-
-          <!-- ================= CENTER + QUEUE VIEW SWITCH ================= -->
-          <div class="cw-tabs" style="margin-bottom:10px">
-            <button class="cw-tab active" id="dash-cw-tab-flat" onclick="switchDashCW('flat')">
-              📋 Flat View
-            </button>
-
-            <button class="cw-tab" id="dash-cw-tab-pivot" onclick="switchDashCW('pivot')">
-              🔀 Centers × Queues Pivot
-            </button>
-          </div>
-
-          <!-- ================= FLAT VIEW ================= -->
-          <div id="dash-cw-flat-view">
-
-            <!-- Center + Queue — Line Count + Performance -->
-            <div class="table-card">
-              <div class="table-header">
-
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                  <div style="font-size:13px;font-weight:700">
-                    🏢 Center + Queue — Line Count + Performance
-                  </div>
-
-                  <span class="cnt-badge" id="dash-cw-badge"
-                    style="background:var(--purple-light);color:var(--purple);border-color:var(--purple)">
-                    0
-                  </span>
-                </div>
-
-                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-
-                  <!-- CENTER DROPDOWN -->
-                  <select class="filter-input" id="dash-cw-center-filter" onchange="filterDashCW()"
-                    style="max-width:160px">
-
-                    <option value="">All Centers</option>
-                    <option>Ahmedabad</option>
-                    <option>Karjan</option>
-                    <option>Vadodara</option>
-                    <option>Vadodara-WFH</option>
-                    <option>Mangalore</option>
-                    <option>Chennai</option>
-                  </select>
-
-                  <!-- SEARCH -->
-                  <input type="text" class="filter-input" id="dash-cw-queue-search" placeholder="🔍 Queue search..."
-                    oninput="filterDashCW()" style="width:180px">
-
-                  <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">
-                    ✕ Clear
-                  </button>
-
-                  <button class="print-btn" onclick="printSection('dash-cw-table','Center-wise Queue')">
-                    🖨️
-                  </button>
-
-                  <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-table','CW_Queue')">
-                    📥
-                  </button>
-
-                  <button class="btn btn-primary btn-sm" onclick="openViewAll('centerwise')">
-                    👁 All
-                  </button>
-
-                </div>
-              </div>
-
-              <div class="scroll-wrap">
-                <div class="table-wrap">
-
-                  <table id="dash-cw-table">
-
-                    <thead>
-                      <tr>
-                        <th class="sortable" onclick="sortDashCW('center',this)">
-                          Center
-                        </th>
-
-                        <th class="sortable" onclick="sortDashCW('queue',this)">
-                          Queue
-                        </th>
-
-                        <th class="sortable sort-desc" onclick="sortDashCW('count',this)">
-                          Line Count
-                        </th>
-
-                        <th class="sortable" onclick="sortDashCW('earnings',this)">
-                          Earnings
-                        </th>
-
-                        <th class="sortable" onclick="sortDashCW('perf',this)">
-                          Performance
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody id="dash-cw-tbody"></tbody>
-                    <tfoot id="dash-cw-tfoot"></tfoot>
-
-                  </table>
-
-                </div>
-              </div>
-
-              <div
-                style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
-
-                <div id="dash-cw-pi" style="font-size:11px;color:var(--muted)">
-                </div>
-
-                <div class="pagination" id="dash-cw-pag">
-                </div>
-
-              </div>
-            </div>
-          </div>
-
-          <!-- ================= PIVOT VIEW ================= -->
-          <div id="dash-cw-pivot-view" style="display:none">
-
-            <div class="table-card">
-
-              <div class="table-header">
-
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div style="font-size:13px;font-weight:700">
-                    🔀 Centers × Queues Pivot
-                  </div>
-
-                  <span class="cnt-badge" id="dash-cw-pivot-badge">
-                    All
-                  </span>
-                </div>
-
-                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-
-                  <!-- PIVOT CENTER FILTER -->
-                  <select class="filter-input" id="dash-cw-pivot-center" onchange="renderDashCWPivot()"
-                    style="max-width:160px">
-
-                    <option value="">All Centers</option>
-                    <option>Ahmedabad</option>
-                    <option>Karjan</option>
-                    <option>Vadodara</option>
-                    <option>Vadodara-WFH</option>
-                    <option>Mangalore</option>
-                    <option>Chennai</option>
-                  </select>
-
-                  <!-- PIVOT SEARCH -->
-                  <input type="text" class="filter-input" id="dash-cw-pivot-search" placeholder="🔍 Search queue..."
-                    oninput="renderDashCWPivot()" style="width:180px">
-
-                  <button class="btn btn-outline btn-sm" onclick="
-          document.getElementById('dash-cw-pivot-search').value='';
-          renderDashCWPivot();
-        ">
-                    ✕
-                  </button>
-
-                </div>
-              </div>
-
-              <div class="scroll-wrap">
-                <div class="table-wrap">
-
-                  <table id="dash-cw-pivot-table" class="pivot-tbl">
-
-                    <thead id="dash-cw-pivot-thead"></thead>
-
-                    <tbody id="dash-cw-pivot-tbody"></tbody>
-
-                  </table>
-
-                </div>
-              </div>
-            </div>
-          </div>
-
+          
+         
           <!-- TOP 10 INSIGHT CARDS -->
           <div class="insight-grid">
             <!-- Top 10 ABBYY Error Operators (only Primary Operator ABBYY errors) -->
@@ -2709,9 +2532,7 @@
               <div class="pagination" id="dash-dw-pag"></div>
             </div>
           </div>
-
-        </div>
-
+          </div>
         <!-- ======================== ABBYY PAGE ======================== -->
         <div class="page" id="page-abbyy">
           <div class="page-title">ABBYY Error Analysis</div>
@@ -2758,6 +2579,30 @@
             <!-- NEW: Error Reason dropdown -->
             <select class="filter-input" id="abbyy-reason-filter" onchange="filterAbbyy()" style="max-width:150px">
               <option value="">All Error Reasons</option>
+              <option>Catch</option>
+              <option>Credit Memo</option>
+              <option>Discount</option>
+              <option>Extended Price incorrect</option>
+              <option>Field24</option>
+              <option>Freight Charges</option>
+              <option>Invoice Amount wrong</option>
+              <option>Invoice Date Wrong</option>
+              <option>Invoice Number Wrong</option>
+              <option>Item Code incorrect</option>
+              <option>Item Description incorre</option>
+              <option>Keg Deposit</option>
+              <option>Keg Return</option>
+              <option>Other Charges</option>
+              <option>Pack /Size/Unit incorrec</option>
+              <option>Processed as Detailed Le</option>
+              <option>Processed as Purchase Su</option>
+              <option>Purchase Order Wrong</option>
+              <option>Quantity incorrect</option>
+              <option>Sales Tax</option>
+              <option>Split</option>
+              <option>UOM incorrect</option>
+              <option>Vendor Name wrong</option>
+
             </select>
             <button class="print-btn" onclick="printSection('abbyy-data-table','ABBYY_Errors')">🖨️</button>
             <button class="btn btn-outline btn-sm"
@@ -4748,238 +4593,7 @@
     function closeModal() { document.getElementById('modal-confirm').classList.remove('show'); }
 
 
-    // =====================================================
-    // DASHBOARD CW VIEW SWITCH
-    // =====================================================
-
-    let dashCWView = 'flat';
-
-    function switchDashCW(view) {
-
-      dashCWView = view;
-
-      document.getElementById('dash-cw-tab-flat')
-        .classList.toggle('active', view === 'flat');
-
-      document.getElementById('dash-cw-tab-pivot')
-        .classList.toggle('active', view === 'pivot');
-
-      document.getElementById('dash-cw-flat-view')
-        .style.display = view === 'flat' ? 'block' : 'none';
-
-      document.getElementById('dash-cw-pivot-view')
-        .style.display = view === 'pivot' ? 'block' : 'none';
-
-      if (view === 'pivot') {
-        renderDashCWPivot();
-      }
-    }
-
-    // =====================================================
-    // PIVOT TABLE RENDER
-    // =====================================================
-
-    function renderDashCWPivot() {
-
-      const thead = document.getElementById('dash-cw-pivot-thead');
-      const tbody = document.getElementById('dash-cw-pivot-tbody');
-
-      if (!thead || !tbody) return;
-
-      const centerFilter =
-        document.getElementById('dash-cw-pivot-center')?.value || '';
-
-      const search =
-        (document.getElementById('dash-cw-pivot-search')?.value || '')
-          .toLowerCase();
-
-      let data = [...DB.summary];
-
-      // CENTER FILTER
-      if (centerFilter) {
-        data = data.filter(r =>
-          (r['Location'] || '') === centerFilter
-        );
-      }
-
-      // ALL QUEUES
-      let queues = [
-        ...new Set(
-          data.map(r =>
-            r['Operation Queue'] || 'General'
-          )
-        )
-      ].sort();
-
-      // SEARCH FILTER
-      if (search) {
-        queues = queues.filter(q =>
-          q.toLowerCase().includes(search)
-        );
-      }
-
-      // ALL CENTERS
-      let centers = [
-        ...new Set(
-          data.map(r => r['Location'] || '—')
-        )
-      ];
-
-      if (centerFilter) {
-        centers = [centerFilter];
-      }
-
-      // PIVOT MAP
-      const pivot = {};
-      const rowTotals = {};
-      const colTotals = {};
-
-      let grand = 0;
-
-      centers.forEach(c => {
-        pivot[c] = {};
-        rowTotals[c] = 0;
-
-        queues.forEach(q => {
-          pivot[c][q] = 0;
-        });
-      });
-
-      queues.forEach(q => {
-        colTotals[q] = 0;
-      });
-
-      // BUILD DATA
-      data.forEach(r => {
-
-        const center = r['Location'] || '—';
-        const queue = r['Operation Queue'] || 'General';
-
-        const count = +r['Total Count'] || 0;
-
-        if (
-          pivot[center] &&
-          pivot[center][queue] !== undefined
-        ) {
-
-          pivot[center][queue] += count;
-
-          rowTotals[center] += count;
-
-          colTotals[queue] += count;
-
-          grand += count;
-        }
-      });
-
-      // HEADER
-      thead.innerHTML = `
-    <tr>
-      <th class="rh">Center</th>
-
-      ${queues.map(q => `
-        <th>${esc(q)}</th>
-      `).join('')}
-
-      <th class="pivot-total-col">
-        Total
-      </th>
-
-      <th class="pivot-total-col">
-        Perf%
-      </th>
-    </tr>
-  `;
-
-      // BODY
-      tbody.innerHTML = centers.map(center => {
-
-        const total = rowTotals[center] || 0;
-
-        const perf = grand > 0
-          ? ((total / grand) * 100)
-          : 0;
-
-        return `
-      <tr>
-
-        <td class="rh">
-          ${cBadge(center)}
-        </td>
-
-        ${queues.map(q => `
-          <td style="
-            text-align:right;
-            font-family:'Space Mono',monospace
-          ">
-            ${pivot[center][q]
-            ? pivot[center][q].toLocaleString()
-            : '—'}
-          </td>
-        `).join('')}
-
-        <td class="pivot-total-col"
-          style="
-            text-align:right;
-            font-family:'Space Mono',monospace
-          ">
-
-          <strong>
-            ${total.toLocaleString()}
-          </strong>
-
-        </td>
-
-        <td class="pivot-total-col">
-          ${perf.toFixed(1)}%
-        </td>
-
-      </tr>
-    `;
-      }).join('')
-
-        +
-
-        `
-    <tr class="pivot-total-row">
-
-      <td class="rh">
-        <strong>🏆 Total</strong>
-      </td>
-
-      ${queues.map(q => `
-        <td class="pivot-total-col"
-          style="
-            text-align:right;
-            font-family:'Space Mono',monospace
-          ">
-
-          <strong>
-            ${(colTotals[q] || 0).toLocaleString()}
-          </strong>
-
-        </td>
-      `).join('')}
-
-      <td class="pivot-total-col"
-        style="
-          text-align:right;
-          font-family:'Space Mono',monospace
-        ">
-
-        <strong>
-          ${grand.toLocaleString()}
-        </strong>
-
-      </td>
-
-      <td class="pivot-total-col">
-        <strong>100%</strong>
-      </td>
-
-    </tr>
-  `;
-    }
+ 
     // For global functions that need to be called from HTML
     window.setPivotLoc = setPivotLoc;
     window.setPivotReason = setPivotReason;
