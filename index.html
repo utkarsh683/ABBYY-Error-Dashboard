@@ -4417,15 +4417,100 @@
       renderDashCWPaged();
     }
     function renderDashCWPaged() {
-      const data = dashCWData; const gt = data.reduce((a, r) => a + r.count, 0); const rows = data.map(r => ({ ...r, perf: gt > 0 ? (r.count / gt * 100) : 0 }));
-      const sorted = [...rows].sort((a, b) => { if (dashCWSortCol === 'center') return dashCWSortDir * a.center.localeCompare(b.center); if (dashCWSortCol === 'queue') return dashCWSortDir * a.queue.localeCompare(b.queue); return dashCWSortDir * (a.count - b.count); });
-      const tbody = document.getElementById('dash-cw-tbody'); const tfoot = document.getElementById('dash-cw-tfoot');
-      if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>'; if (tfoot) tfoot.innerHTML = ''; document.getElementById('dash-cw-pag').innerHTML = ''; return; }
-      const paged = sorted.slice((dashCWPage - 1) * PS, dashCWPage * PS); const pc = p => p >= 20 ? 'var(--green)' : p >= 10 ? 'var(--blue)' : p >= 5 ? 'var(--yellow)' : 'var(--orange)';
-      tbody.innerHTML = paged.map(r => `<tr><td>${cBadge(r.center)}</td><td>${esc(r.queue)}</td><td><strong style="font-family:'Space Mono',monospace">${r.count.toLocaleString()}</strong></td><td>₹${r.earnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>${pBar(r.perf, pc(r.perf))}</td></tr>`).join('');
-      if (tfoot) { const ge = sorted.reduce((a, r) => a + r.earnings, 0); tfoot.innerHTML = `<tr class="grand-total-row"><td>🏆 Grand Total</td><td>${sorted.length} rows</td><td>${gt.toLocaleString()}</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>100%</td></tr>`; }
-      pager('dash-cw-pag', 'dash-cw-pi', sorted.length, dashCWPage, 'setDashCWPage');
-    }
+
+  const data = dashCWData;
+
+  const gt = data.reduce((a, r) => a + r.count, 0);
+
+  const rows = data.map(r => ({
+    ...r,
+    perf: gt > 0 ? (r.count / gt * 100) : 0
+  }));
+
+  const sorted = [...rows].sort((a, b) => {
+    if (dashCWSortCol === 'center')
+      return dashCWSortDir * a.center.localeCompare(b.center);
+
+    if (dashCWSortCol === 'queue')
+      return dashCWSortDir * a.queue.localeCompare(b.queue);
+
+    return dashCWSortDir * (a.count - b.count);
+  });
+
+  const tbody = document.getElementById('dash-cw-tbody');
+  const tfoot = document.getElementById('dash-cw-tfoot');
+  const pag = document.getElementById('dash-cw-pag');
+
+  if (!tbody) {
+    console.error('Missing element: dash-cw-tbody');
+    return;
+  }
+
+  if (!sorted.length) {
+
+    tbody.innerHTML =
+      '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>';
+
+    if (tfoot) tfoot.innerHTML = '';
+    if (pag) pag.innerHTML = '';
+
+    return;
+  }
+
+  const paged = sorted.slice(
+    (dashCWPage - 1) * PS,
+    dashCWPage * PS
+  );
+
+  const pc = p =>
+    p >= 20 ? 'var(--green)' :
+    p >= 10 ? 'var(--blue)' :
+    p >= 5 ? 'var(--yellow)' :
+    'var(--orange)';
+
+  tbody.innerHTML = paged.map(r => `
+    <tr>
+      <td>${cBadge(r.center)}</td>
+      <td>${esc(r.queue)}</td>
+      <td>
+        <strong style="font-family:'Space Mono',monospace">
+          ${r.count.toLocaleString()}
+        </strong>
+      </td>
+      <td>
+        ₹${r.earnings.toLocaleString('en-IN', {
+          minimumFractionDigits: 2
+        })}
+      </td>
+      <td>${pBar(r.perf, pc(r.perf))}</td>
+    </tr>
+  `).join('');
+
+  if (tfoot) {
+
+    const ge = sorted.reduce((a, r) => a + r.earnings, 0);
+
+    tfoot.innerHTML = `
+      <tr class="grand-total-row">
+        <td>🏆 Grand Total</td>
+        <td>${sorted.length} rows</td>
+        <td>${gt.toLocaleString()}</td>
+        <td>₹${ge.toLocaleString('en-IN', {
+          minimumFractionDigits: 2
+        })}</td>
+        <td>100%</td>
+      </tr>
+    `;
+  }
+
+  pager(
+    'dash-cw-pag',
+    'dash-cw-pi',
+    sorted.length,
+    dashCWPage,
+    'setDashCWPage'
+  );
+}
 
     // ============================================================
     // EMPLOYEES (unchanged)
