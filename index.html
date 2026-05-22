@@ -1960,6 +1960,46 @@
       animation: spin 1s linear infinite
     }
 
+    /* LOADING SCREEN */
+    #app-loader {
+      position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a, #1e293b);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity .5s ease;
+    }
+    #app-loader.fade-out { opacity: 0; pointer-events: none; }
+    .loader-box { text-align: center; }
+    .loader-logo { width: 56px; height: 56px; background: linear-gradient(135deg,#1a6ef0,#7c3aed);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; animation: loaderPulse 1.5s ease infinite; }
+    .loader-logo svg { width: 28px; height: 28px; fill: white; }
+    .loader-title { font-family: 'Space Mono',monospace; font-size: 18px; font-weight: 700;
+      color: white; margin-bottom: 6px; }
+    .loader-sub { font-size: 12px; color: rgba(255,255,255,.5); margin-bottom: 24px; }
+    .loader-bar { width: 200px; height: 3px; background: rgba(255,255,255,.1);
+      border-radius: 10px; margin: 0 auto; overflow: hidden; }
+    .loader-fill { height: 100%; background: linear-gradient(90deg,#1a6ef0,#7c3aed);
+      border-radius: 10px; animation: loaderSlide 1.8s ease infinite; }
+    .loader-status { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 12px;
+      font-family: 'Space Mono',monospace; }
+    @keyframes loaderPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+    @keyframes loaderSlide { 0%{width:0;margin-left:0} 50%{width:100%;margin-left:0}
+      100%{width:0;margin-left:100%} }
+
+    /* SIDEBAR COLLAPSE BUTTON */
+    .sidebar-toggle-btn {
+      position: fixed; top: calc(var(--header-h) + 12px); left: calc(var(--sidebar-w) - 14px);
+      width: 28px; height: 28px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 150; box-shadow: var(--shadow);
+      transition: all .3s; font-size: 11px; color: var(--muted);
+    }
+    .sidebar-toggle-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+    body.sidebar-collapsed .sidebar-toggle-btn { left: 10px; }
+    body.sidebar-collapsed .sidebar { transform: translateX(calc(-1 * var(--sidebar-w) + 0px)); }
+    body.sidebar-collapsed .main { margin-left: 0; }
+    @media(max-width:768px) { .sidebar-toggle-btn { display: none; } }
+
+
     /* PRINT BUTTON */
     .print-btn {
       padding: 4px 10px;
@@ -2066,6 +2106,20 @@
 </head>
 
 <body>
+
+  <!-- LOADING SCREEN -->
+  <div id="app-loader">
+    <div class="loader-box">
+      <div class="loader-logo"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg></div>
+      <div class="loader-title">JB ABBYY-ERROR</div>
+      <div class="loader-sub">Dashboard v18 — Loading...</div>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+      <div class="loader-status" id="loader-status">Initializing...</div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR COLLAPSE BUTTON -->
+  <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar">◀</button>
 
   <!-- LOGIN -->
   <div id="login-screen">
@@ -2314,8 +2368,8 @@
               <div class="chart-wrap"><canvas id="chart-type"></canvas></div>
             </div>
           </div>
-          
-         
+
+
           <!-- TOP 10 INSIGHT CARDS -->
           <div class="insight-grid">
             <!-- Top 10 ABBYY Error Operators (only Primary Operator ABBYY errors) -->
@@ -2532,7 +2586,50 @@
               <div class="pagination" id="dash-dw-pag"></div>
             </div>
           </div>
+
+          <!-- Center + Queue Performance on Dashboard -->
+          <div class="table-card">
+            <div class="table-header">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">🏢 Center + Queue Performance</div>
+                <span class="cnt-badge" id="dash-cw-badge">0</span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <select class="filter-input" id="dash-cw-center-filter" onchange="filterDashCW()" style="max-width:130px">
+                  <option value="">🌐 All Centers</option>
+                  <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
+                  <option>Vadodara-WFH</option><option>Mangalore</option><option>Chennai</option>
+                </select>
+                <input type="text" class="filter-input" id="dash-cw-queue-search" placeholder="🔍 Search queue..."
+                  oninput="filterDashCW()" style="width:150px">
+                <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">✕</button>
+                <button class="print-btn" onclick="printSection('dash-cw-table','Center + Queue Performance')">🖨️</button>
+                <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-table','CQ_Performance')">📥</button>
+              </div>
+            </div>
+            <div class="scroll-wrap">
+              <div class="table-wrap">
+                <table id="dash-cw-table">
+                  <thead>
+                    <tr>
+                      <th class="sortable" onclick="sortDashCW('center',this)">Center</th>
+                      <th class="sortable" onclick="sortDashCW('queue',this)">Queue</th>
+                      <th class="sortable sort-desc" onclick="sortDashCW('count',this)">Line Count</th>
+                      <th>Earnings</th>
+                      <th>Performance</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dash-cw-tbody"></tbody>
+                  <tfoot id="dash-cw-tfoot"></tfoot>
+                </table>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+              <div id="dash-cw-pi" style="font-size:11px;color:var(--muted)"></div>
+              <div class="pagination" id="dash-cw-pag"></div>
+            </div>
           </div>
+        </div>
         <!-- ======================== ABBYY PAGE ======================== -->
         <div class="page" id="page-abbyy">
           <div class="page-title">ABBYY Error Analysis</div>
@@ -2540,7 +2637,7 @@
           <div class="qpills-wrap" id="abbyy-qpills"><span class="filter-label">Error Type:</span><button
               class="qpill active" onclick="setAbbyyQ('',this)">All</button></div>
           <div class="filter-bar">
-            <input type="text" class="filter-input" id="abbyy-search" placeholder="🔍 Search operator/invoice..."
+            <input type="text" class="filter-input" id="abbyy-search" placeholder="🔍 Search by operator ID, email, invoice..."
               oninput="filterAbbyy()" style="width:210px"><button class="btn btn-outline btn-sm"
               onclick="clearAbbyySearch()">✕</button><span class="filter-sep"></span>
             <div class="date-range-grp"><span>From:</span><input type="date" class="filter-input" id="abbyy-from"
@@ -2662,20 +2759,31 @@
                     onclick="setPrimaryPivotBy('reason')">By Reason</button><button class="vt-btn"
                     id="piv-primary-by-loc" onclick="setPrimaryPivotBy('location')">By Location</button></div>
               </div>
-              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="print-btn"
-                  onclick="printSection('abbyy-primary-pivot-table','Primary Operator Pivot')">🖨️</button><button
-                  class="btn btn-outline btn-sm"
-                  onclick="exportTableToExcel('abbyy-primary-pivot-table','Primary_Pivot')">📥</button><button
-                  class="btn btn-primary btn-sm" onclick="openViewAll('primaryPivot')">👁 All</button></div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
             </div>
             <div
               style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;padding:8px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
               <input type="text" class="filter-input" id="primary-piv-search"
                 placeholder="🔍 Search primary operator..." oninput="renderAbbyyPrimaryPivot()"
-                style="width:210px"><button class="btn btn-outline btn-sm"
-                onclick="document.getElementById('primary-piv-search').value=''; renderAbbyyPrimaryPivot()">✕
-                Clear</button><button class="print-btn"
-                onclick="printSection('abbyy-primary-pivot-table','Primary Operator Pivot')">🖨️</button>
+                style="width:210px">
+              <button class="btn btn-outline btn-sm"
+                onclick="document.getElementById('primary-piv-search').value=''; renderAbbyyPrimaryPivot()">✕ Clear</button>
+              <span class="filter-sep"></span>
+              <select class="filter-input" id="primary-piv-loc" onchange="setPrimaryPivotLoc(this.value)" style="max-width:150px">
+                <option value="">🌐 All Locations</option>
+                <option>Ahmedabad</option>
+                <option>Karjan</option>
+                <option>Vadodara</option>
+                <option>Vadodara-WFH</option>
+                <option>Mangalore</option>
+                <option>Chennai</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="setPrimaryPivotLoc(document.getElementById('primary-piv-loc').value)">📍 Set Location</button>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('primary-piv-loc').value=''; setPrimaryPivotLoc('')">✕ Reset</button>
+              <span class="filter-sep"></span>
+              <button class="print-btn" onclick="printSection('abbyy-primary-pivot-table','Primary Operator Pivot')">🖨️</button>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('abbyy-primary-pivot-table','Primary_Pivot')">📥 Export</button>
+              <button class="btn btn-primary btn-sm" onclick="openViewAll('primaryPivot')">👁 View All</button>
             </div>
             <div class="scroll-wrap">
               <div class="table-wrap">
@@ -2695,27 +2803,36 @@
                 <div style="font-size:13px;font-weight:700">🔀 Error Reason × Secondary Op Pivot</div><span
                   class="cnt-badge" id="abbyy-piv-badge"
                   style="background:var(--purple-light);color:var(--purple);border-color:var(--purple)">0</span>
-                <div class="view-toggle"><button class="vt-btn active" id="piv-by-loc"
-                    onclick="setAbbyyPivotBy('location')">By Location</button><button class="vt-btn" id="piv-by-reason"
-                    onclick="setAbbyyPivotBy('reason')">By Reason</button></div>
+                <div class="view-toggle">
+                  <button class="vt-btn active" id="piv-by-loc" onclick="setAbbyyPivotBy('location')">By Location</button>
+                  <button class="vt-btn" id="piv-by-reason" onclick="setAbbyyPivotBy('reason')">By Reason</button>
+                </div>
               </div>
-              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="print-btn"
-                  onclick="printSection('abbyy-pivot-table','ABBYY Pivot')">🖨️</button><button
-                  class="btn btn-outline btn-sm"
-                  onclick="exportTableToExcel('abbyy-pivot-table','ABBYY_Pivot')">📥</button><button
-                  class="btn btn-primary btn-sm" onclick="openViewAll('abbyyPivot')">👁 All</button></div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"></div>
             </div>
             <div
               style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;padding:8px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
               <input type="text" class="filter-input" id="piv-search" placeholder="🔍 Search secondary op..."
-                oninput="renderAbbyyPivot()" style="width:190px"><button class="btn btn-outline btn-sm"
-                onclick="document.getElementById('piv-search').value=''; renderAbbyyPivot()">✕ Clear</button><button
-                class="print-btn" onclick="printSection('abbyy-pivot-table','ABBYY Pivot')">🖨️</button>
+                oninput="renderAbbyyPivot()" style="width:190px">
+              <button class="btn btn-outline btn-sm"
+                onclick="document.getElementById('piv-search').value=''; renderAbbyyPivot()">✕ Clear</button>
+              <span class="filter-sep"></span>
+              <select class="filter-input" id="sec-piv-loc" onchange="setSecPivotLoc(this.value)" style="max-width:150px">
+                <option value="">🌐 All Locations</option>
+                <option>Ahmedabad</option>
+                <option>Karjan</option>
+                <option>Vadodara</option>
+                <option>Vadodara-WFH</option>
+                <option>Mangalore</option>
+                <option>Chennai</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="setSecPivotLoc(document.getElementById('sec-piv-loc').value)">📍 Set Location</button>
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('sec-piv-loc').value=''; setSecPivotLoc('')">✕ Reset</button>
+              <span class="filter-sep"></span>
+              <button class="print-btn" onclick="printSection('abbyy-pivot-table','Secondary Op Pivot')">🖨️ Print</button>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('abbyy-pivot-table','ABBYY_SecOp_Pivot')">📥 Export</button>
+              <button class="btn btn-primary btn-sm" onclick="openViewAll('abbyyPivot')">👁 View All</button>
             </div>
-            <!-- <div class="lpills-wrap" id="piv-loc-pills"><span class="filter-label">Location:</span><button
-                class="lpill active" onclick="setPivotLoc('',this)">All</button></div>
-            <div class="qpills-wrap" id="piv-reason-pills"><span class="filter-label">Error Reason:</span><button
-                class="qpill active" onclick="setPivotReason('',this)">All</button></div> -->
             <div class="scroll-wrap">
               <div class="table-wrap">
                 <table id="abbyy-pivot-table" class="pivot-tbl">
@@ -3404,16 +3521,23 @@
     let abbyyPivotBy = 'location', pivotLocFilter = '', pivotReasonFilter = '';
     let vaAllData = [];
     let primaryPivotDim = 'reason';
+    let primaryPivotLocFilter = '';
+    let secPivotLocFilter = '';
 
     // ============================================================
     // AUTH & INIT
     // ============================================================
     function switchLoginTab(m) { loginMode = m;['admin', 'user'].forEach(t => document.getElementById('ltab-' + t).classList.toggle('active', t === m)); document.getElementById('login-error').style.display = 'none';['login-user', 'login-pass'].forEach(id => document.getElementById(id).value = ''); }
     function togglePass() { const i = document.getElementById('login-pass'), b = document.getElementById('show-pass-btn'); i.type = i.type === 'password' ? 'text' : 'password'; b.textContent = i.type === 'password' ? '👁' : '🙈'; }
-    function doLogin() { const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(), c = CREDS[loginMode]; if (u === c.u && p === c.p) { currentUser = { u, role: c.role }; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-screen').style.display = 'block'; applyRoleUI(); initApp(); showToast(`✅ Welcome ${c.role === 'admin' ? '🔐 Admin' : '👤 User'}!`); } else document.getElementById('login-error').style.display = 'block'; }
+    function doLogin() { const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim(), c = CREDS[loginMode]; if (u === c.u && p === c.p) { currentUser = { u, role: c.role }; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-screen').style.display = 'block'; applyRoleUI(); showLoader('Loading dashboard...'); setTimeout(() => { initApp(); hideLoader(); showToast(`✅ Welcome ${c.role === 'admin' ? '🔐 Admin' : '👤 User'}!`); }, 200); } else document.getElementById('login-error').style.display = 'block'; }
     function doLogout() { currentUser = null; document.getElementById('login-screen').style.display = 'block'; document.getElementById('app-screen').style.display = 'none';['login-user', 'login-pass'].forEach(id => document.getElementById(id).value = ''); document.getElementById('login-error').style.display = 'none'; }
     function applyRoleUI() { const a = currentUser.role === 'admin'; document.getElementById('hdr-avatar').textContent = a ? 'A' : 'U'; document.getElementById('hdr-user').textContent = a ? 'Admin' : 'User'; const rp = document.getElementById('hdr-role'); rp.textContent = a ? 'Admin' : 'User'; rp.className = 'role-pill ' + (a ? 'role-admin' : 'role-user'); document.getElementById('admin-export-btn').style.display = a ? 'flex' : 'none'; document.querySelectorAll('.admin-nav').forEach(el => el.style.display = a ? 'flex' : 'none'); }
-    function initApp() { loadDB(); renderAll(); renderDW(); updateSidePanel(); updateStorageInfo(); loadSettings(); document.getElementById('sp-date').textContent = new Date().toISOString().split('T')[0]; if (DB.gsync.sheetId) document.getElementById('gsync-sheet-id').value = DB.gsync.sheetId; if (DB.gsync.apiKey) document.getElementById('gsync-api-key').value = DB.gsync.apiKey; if (DB.gsync.connected) reconnectGSheet(); if (!DB.summary.length && !DB.daywise.length) loadSampleData(); updateLastUpdate(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); }
+    function initApp() {
+      if (DB.settings.sidebarCollapsed) {
+        document.body.classList.add('sidebar-collapsed');
+        const btn = document.getElementById('sidebar-toggle-btn');
+        if (btn) btn.textContent = '▶';
+      } loadDB(); renderAll(); renderDW(); updateSidePanel(); updateStorageInfo(); loadSettings(); document.getElementById('sp-date').textContent = new Date().toISOString().split('T')[0]; if (DB.gsync.sheetId) document.getElementById('gsync-sheet-id').value = DB.gsync.sheetId; if (DB.gsync.apiKey) document.getElementById('gsync-api-key').value = DB.gsync.apiKey; if (DB.gsync.connected) reconnectGSheet(); if (!DB.summary.length && !DB.daywise.length) loadSampleData(); updateLastUpdate(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); }
     function saveDB() { try { localStorage.setItem('jb_v17', JSON.stringify(DB)); } catch (e) { } }
     function loadDB() { try { const d = localStorage.getItem('jb_v17') || localStorage.getItem('jb_dash_v16') || localStorage.getItem('jb_abbyy_db15'); if (d) { const p = JSON.parse(d); DB = { ...DB, ...p }; } } catch (e) { } }
     function updateStorageInfo() { const s = JSON.stringify(DB).length; const el = document.getElementById('storage-info'); if (el) el.innerHTML = `<div>Summary: <b>${DB.summary.length}</b></div><div>ABBYY: <b>DB.abbyy.length}</b></div><div>XC: <b>${DB.xc.length}</b></div><div>Day-wise: <b>${DB.daywise.length}</b></div><div>Storage: <b>~${(s / 1024).toFixed(1)} KB</b></div>`; }
@@ -3489,7 +3613,28 @@
     function getSrc() { const use = DB.daywise.length > 0; return { data: use ? [...DB.daywise] : [...DB.summary], isDW: use }; }
     function populateDWQF() { const qs = [...new Set(DB.daywise.map(r => r['Operation Queue']).filter(Boolean))]; const el = document.getElementById('dw-qf'); if (!el) return; el.innerHTML = '<option value="">All Queues</option>' + qs.map(q => `<option>${q}</option>`).join(''); }
     function populateDashQF() { const src = DB.daywise.length > 0 ? DB.daywise : DB.summary; const qs = [...new Set(src.map(r => r['Operation Queue']).filter(Boolean))]; const el = document.getElementById('dash-qf'); if (!el) return; const cur = el.value; el.innerHTML = '<option value="">All Queues</option>' + qs.map(q => `<option${q === cur ? ' selected' : ''}>${q}</option>`).join(''); }
-    function renderAll() { renderMetrics(); renderDashTable(); renderCharts(); renderTop10(); renderAbbyy(); renderAbbyyPivot(); renderAbbyyPrimaryPivot(); renderXC(); updateBadges(); updateSidePanel(); updateCAB(currentCenter); populateDashQF(); renderDashDW(); renderDashCW(); }
+    let _renderAllTimer = null;
+    function renderAll() {
+      if (_renderAllTimer) clearTimeout(_renderAllTimer);
+      _renderAllTimer = setTimeout(() => {
+        renderMetrics();
+        renderDashTable();
+        requestAnimationFrame(() => {
+          renderCharts();
+          renderTop10();
+          renderDashDW();
+          renderDashCW();
+        });
+        renderAbbyy();
+        renderAbbyyPivot();
+        renderAbbyyPrimaryPivot();
+        renderXC();
+        updateBadges();
+        updateSidePanel();
+        updateCAB(currentCenter);
+        populateDashQF();
+      }, 30);
+    }
     function renderMetrics() {
       const ab = getFiltered('abbyy'), xc = getFiltered('xc');
       const { data: src } = getSrc(); let filtered = currentCenter === 'all' ? src : src.filter(r => (r['Location'] || '') === currentCenter);
@@ -3536,19 +3681,21 @@
     function renderTop10() {
       const ab = getFiltered('abbyy'), sum = getFiltered('summary'); const { data: src } = getSrc(); const xc = getFiltered('xc');
       // ABBYY top 10 (only Primary Operator ABBYY errors)
-      const s1 = (document.getElementById('top10-abbyy-search')?.value || '').toLowerCase();
+     const s1 = (document.getElementById('top10-abbyy-search')?.value || '').toLowerCase();
+      if (s1) abbyyList = abbyyList.filter(r => r.name.toLowerCase().includes(s1));
       const sort1 = document.getElementById('top10-abbyy-sort')?.value || 'errors';
-      const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op !== '—') { oErr[op] = (oErr[op] || 0) + 1; const loc = r['Location'] || r['Location 1'] || ''; if (loc) { oLoc[op] = oLoc[op] || {}; oLoc[op][loc] = (oLoc[op][loc] || 0) + 1; } } });
-      let abbyyList = Object.entries(oErr).map(([name, cnt]) => ({ name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }));
+      const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op.trim() && op !== '—') { const locKey = r['Location'] || r['Location 1'] || ''; const key = op + '|||' + locKey; oErr[key] = (oErr[key] || 0) + 1; if (locKey) { oLoc[op] = oLoc[op] || {}; oLoc[op][locKey] = (oLoc[op][locKey] || 0) + 1; } } });
+      let abbyyList = Object.entries(oErr).map(([key, cnt]) => { const name = key.split('|||')[0]; return { name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }; });
       if (s1) abbyyList = abbyyList.filter(r => r.name.toLowerCase().includes(s1));
       if (sort1 === 'errors') abbyyList.sort((a, b) => b.cnt - a.cnt); else if (sort1 === 'az') abbyyList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort1 === 'za') abbyyList.sort((a, b) => b.name.localeCompare(a.name)); else if (sort1 === 'earnings-hi') abbyyList.sort((a, b) => b.earn - a.earn); else if (sort1 === 'earnings-lo') abbyyList.sort((a, b) => a.earn - b.earn);
       const e1 = document.getElementById('top10-abbyy-tbody');
       e1.innerHTML = abbyyList.slice(0, 10).map(({ name, cnt, earn, loc }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const opS = sum.find(s => sameName(s['User Name'], name)); const st = opStatus(cnt, 0, opS ? +opS['Total Count'] || 0 : 0); const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td>₹${earn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td style="font-family:'Space Mono',monospace;color:var(--red);font-weight:700">${cnt}</td><td>${cb}</td><td><span class="warn-tag ${st.cls}">${st.label}</span></td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
+      
       // Performers top 10 (column header changed to Operator)
       const s2 = (document.getElementById('top10-prod-search')?.value || '').toLowerCase();
       const sort2 = document.getElementById('top10-prod-sort')?.value || 'count';
-      const oc = {}; src.forEach(r => { const n = r['User Name']; if (n) oc[n] = (oc[n] || 0) + (+r['Total Count'] || 0); });
-      let prodList = Object.entries(oc).map(([name, lc]) => ({ name, lc, earn: getEarnings(name), loc: sum.find(s => sameName(s['User Name'], name))?.['Location'] || src.find(d => sameName(d['User Name'], name))?.['Location'] || '—', abErr: ab.filter(a => sameName(a['Primary Operator'], name) || sameName(a['Secondary Operator'], name)).length, xcErr: xc.filter(x => sameName(x['Verification Operator'], name) || sameName(x['Secondary Operator'], name)).length }));
+      const oc = {}; const ocEarn = {}; const ocLoc = {}; const ocQueue = {}; src.forEach(r => { const n = r['User Name']; const loc = r['Location'] || ''; const q = r['Operation Queue'] || ''; if (n) { const k = n + '|||' + loc; if (!oc[k]) { oc[k] = 0; ocEarn[k] = 0; ocLoc[k] = loc; ocQueue[k] = q; } oc[k] += (+r['Total Count'] || 0); ocEarn[k] += (+r['Total Earnings'] || 0); } });
+      let prodList = Object.entries(oc).map(([key, lc]) => { const name = key.split('|||')[0]; const loc = ocLoc[key] || '—'; const earn = ocEarn[key] || 0; const abErr = ab.filter(a => a['Primary Operator'] === name).length; const xcErr = xc.filter(x => x['Verification Operator'] === name).length; return { name, lc, earn, loc, abErr, xcErr }; });
       if (s2) prodList = prodList.filter(r => r.name.toLowerCase().includes(s2));
       if (sort2 === 'count') prodList.sort((a, b) => b.lc - a.lc); else if (sort2 === 'earnings') prodList.sort((a, b) => b.earn - a.earn); else if (sort2 === 'az') prodList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort2 === 'za') prodList.sort((a, b) => b.name.localeCompare(a.name));
       const e2 = document.getElementById('top10-prod-tbody');
@@ -3593,7 +3740,7 @@
     function renderAbbyy() {
       const s = document.getElementById('abbyy-search')?.value || ''; const cf = document.getElementById('abbyy-cf')?.value || ''; const sev = document.getElementById('abbyy-sev')?.value || ''; const fr = document.getElementById('abbyy-from')?.value || ''; const to = document.getElementById('abbyy-to')?.value || ''; const month = document.getElementById('abbyy-month')?.value || ''; const reasonFilter = document.getElementById('abbyy-reason-filter')?.value || '';
       let data = [...DB.abbyy];
-      if (s) data = data.filter(r => JSON.stringify(r).toLowerCase().includes(s.toLowerCase()));
+      if (s) data = data.filter(r => (r['Primary Operator'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Invoice Id'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Tenant Name'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Vendor Name'] || '').toLowerCase().includes(s.toLowerCase()));
       if (cf) data = data.filter(r => (r['Location'] || '') === cf); if (sev) data = data.filter(r => r['Severity'] === sev);
       if (fr) data = data.filter(r => (r['Process Date'] || '') >= fr); if (to) data = data.filter(r => (r['Process Date'] || '') <= to);
       if (month) { const mi = MONTHS.indexOf(month) + 1; data = data.filter(r => { const d = new Date(r['Process Date'] || ''); return !isNaN(d) && d.getMonth() + 1 === mi; }); }
@@ -3649,6 +3796,11 @@
       document.getElementById('piv-by-reason')
         .classList.toggle('active', by === 'reason');
 
+      renderAbbyyPivot();
+    }
+
+    function setSecPivotLoc(loc) {
+      secPivotLocFilter = loc;
       renderAbbyyPivot();
     }
 
@@ -3739,10 +3891,10 @@
       // FILTERS
       // ============================================================
 
-      if (pivotLocFilter) {
+      if (secPivotLocFilter) {
         src = src.filter(r =>
           (r['Location'] || r['Location 1'] || '')
-          === pivotLocFilter
+          === secPivotLocFilter
         );
       }
 
@@ -4033,6 +4185,11 @@
       renderAbbyyPrimaryPivot();
     }
 
+    function setPrimaryPivotLoc(loc) {
+      primaryPivotLocFilter = loc;
+      renderAbbyyPrimaryPivot();
+    }
+
     function renderAbbyyPrimaryPivot() {
 
       const thead = document.getElementById('abbyy-primary-pivot-thead');
@@ -4047,6 +4204,12 @@
       let data = abbyyFilt && abbyyFilt.length
         ? abbyyFilt
         : DB.abbyy;
+
+      if (primaryPivotLocFilter) {
+        data = data.filter(r =>
+          (r['Location'] || r['Location 1'] || '') === primaryPivotLocFilter
+        );
+      }
 
       if (!data.length) {
         thead.innerHTML = `<tr><th>No data</th></tr>`;
@@ -4418,57 +4581,57 @@
     }
     function renderDashCWPaged() {
 
-  const data = dashCWData;
+      const data = dashCWData;
 
-  const gt = data.reduce((a, r) => a + r.count, 0);
+      const gt = data.reduce((a, r) => a + r.count, 0);
 
-  const rows = data.map(r => ({
-    ...r,
-    perf: gt > 0 ? (r.count / gt * 100) : 0
-  }));
+      const rows = data.map(r => ({
+        ...r,
+        perf: gt > 0 ? (r.count / gt * 100) : 0
+      }));
 
-  const sorted = [...rows].sort((a, b) => {
-    if (dashCWSortCol === 'center')
-      return dashCWSortDir * a.center.localeCompare(b.center);
+      const sorted = [...rows].sort((a, b) => {
+        if (dashCWSortCol === 'center')
+          return dashCWSortDir * a.center.localeCompare(b.center);
 
-    if (dashCWSortCol === 'queue')
-      return dashCWSortDir * a.queue.localeCompare(b.queue);
+        if (dashCWSortCol === 'queue')
+          return dashCWSortDir * a.queue.localeCompare(b.queue);
 
-    return dashCWSortDir * (a.count - b.count);
-  });
+        return dashCWSortDir * (a.count - b.count);
+      });
 
-  const tbody = document.getElementById('dash-cw-tbody');
-  const tfoot = document.getElementById('dash-cw-tfoot');
-  const pag = document.getElementById('dash-cw-pag');
+      const tbody = document.getElementById('dash-cw-tbody');
+      const tfoot = document.getElementById('dash-cw-tfoot');
+      const pag = document.getElementById('dash-cw-pag');
 
-  if (!tbody) {
-    console.error('Missing element: dash-cw-tbody');
-    return;
-  }
+      if (!tbody) {
+        console.error('Missing element: dash-cw-tbody');
+        return;
+      }
 
-  if (!sorted.length) {
+      if (!sorted.length) {
 
-    tbody.innerHTML =
-      '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>';
+        tbody.innerHTML =
+          '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>';
 
-    if (tfoot) tfoot.innerHTML = '';
-    if (pag) pag.innerHTML = '';
+        if (tfoot) tfoot.innerHTML = '';
+        if (pag) pag.innerHTML = '';
 
-    return;
-  }
+        return;
+      }
 
-  const paged = sorted.slice(
-    (dashCWPage - 1) * PS,
-    dashCWPage * PS
-  );
+      const paged = sorted.slice(
+        (dashCWPage - 1) * PS,
+        dashCWPage * PS
+      );
 
-  const pc = p =>
-    p >= 20 ? 'var(--green)' :
-    p >= 10 ? 'var(--blue)' :
-    p >= 5 ? 'var(--yellow)' :
-    'var(--orange)';
+      const pc = p =>
+        p >= 20 ? 'var(--green)' :
+          p >= 10 ? 'var(--blue)' :
+            p >= 5 ? 'var(--yellow)' :
+              'var(--orange)';
 
-  tbody.innerHTML = paged.map(r => `
+      tbody.innerHTML = paged.map(r => `
     <tr>
       <td>${cBadge(r.center)}</td>
       <td>${esc(r.queue)}</td>
@@ -4479,18 +4642,18 @@
       </td>
       <td>
         ₹${r.earnings.toLocaleString('en-IN', {
-          minimumFractionDigits: 2
-        })}
+        minimumFractionDigits: 2
+      })}
       </td>
       <td>${pBar(r.perf, pc(r.perf))}</td>
     </tr>
   `).join('');
 
-  if (tfoot) {
+      if (tfoot) {
 
-    const ge = sorted.reduce((a, r) => a + r.earnings, 0);
+        const ge = sorted.reduce((a, r) => a + r.earnings, 0);
 
-    tfoot.innerHTML = `
+        tfoot.innerHTML = `
       <tr class="grand-total-row">
         <td>🏆 Grand Total</td>
         <td>${sorted.length} rows</td>
@@ -4501,16 +4664,16 @@
         <td>100%</td>
       </tr>
     `;
-  }
+      }
 
-  pager(
-    'dash-cw-pag',
-    'dash-cw-pi',
-    sorted.length,
-    dashCWPage,
-    'setDashCWPage'
-  );
-}
+      pager(
+        'dash-cw-pag',
+        'dash-cw-pi',
+        sorted.length,
+        dashCWPage,
+        'setDashCWPage'
+      );
+    }
 
     // ============================================================
     // EMPLOYEES (unchanged)
@@ -4607,7 +4770,34 @@
     // ============================================================
     // PRINT SECTION
     // ============================================================
-    function printSection(tableId, title) { const tbl = document.getElementById(tableId); if (!tbl) return; const w = window.open('', '_blank', 'width=900,height=700'); w.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>body{font-family:DM Sans,sans-serif;padding:20px;font-size:12px}table{width:100%;border-collapse:collapse;margin-top:10px}th{background:#f0f2f7;font-size:10px;font-weight:700;text-transform:uppercase;padding:7px 9px;text-align:left;border:1px solid #e2e8f0}td{padding:7px 9px;border:1px solid #e2e8f0}h2{font-size:16px;margin-bottom:4px}p{font-size:11px;color:#64748b;margin-bottom:12px}</style></head><body><h2>${title}</h2><p>Printed: ${new Date().toLocaleString()}</p>${tbl.outerHTML}</body></html>`); w.document.close(); setTimeout(() => w.print(), 400); }
+    function printSection(tableId, title) {
+      const tbl = document.getElementById(tableId);
+      if (!tbl) { showToast('⚠️ Nothing to print'); return; }
+      const w = window.open('', '_blank', 'width=1000,height=750');
+      if (!w) { showToast('⚠️ Allow popups to print'); return; }
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      w.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+        body{font-family:'DM Sans',sans-serif;padding:24px;font-size:12px;background:#fff;color:#1e293b}
+        table{width:100%;border-collapse:collapse;margin-top:12px}
+        th{background:#f0f2f7;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:8px 10px;text-align:left;border:1px solid #e2e8f0}
+        td{padding:7px 10px;border:1px solid #e2e8f0;font-size:11px}
+        tr:nth-child(even) td{background:#f8fafc}
+        .pivot-total-col{background:#ede9fe!important;font-weight:700}
+        .rh{background:#f0f2f7!important}
+        h2{font-size:18px;font-weight:700;margin-bottom:3px;color:#1e293b}
+        p{font-size:11px;color:#64748b;margin-bottom:14px}
+        .print-footer{margin-top:18px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:8px}
+        @media print{body{padding:12px}button{display:none}}
+      </style></head><body>
+        <h2>${title}</h2>
+        <p>Printed: ${new Date().toLocaleString('en-IN')} &nbsp;|&nbsp; JB ABBYY-ERROR Dashboard v18</p>
+        ${tbl.outerHTML}
+        <div class="print-footer">JB Infotech · Confidential · Generated by JB ABBYY-ERROR Dashboard</div>
+        <script>window.onload=()=>{window.print();}<\/script>
+      </body></html>`);
+      w.document.close();
+    }
 
     // ============================================================
     // UPLOAD, GSYNC, EXPORT, BACKUP (unchanged from previous working version)
@@ -4670,7 +4860,7 @@
     function confirmClear() { showModal('Clear All Data', 'Permanently delete all records?', () => { DB.summary = []; DB.abbyy = []; DB.xc = []; DB.daywise = []; DB.uploadLog = []; if (DB.gsync) delete DB.gsync.lastSync; saveDB(); renderAll(); renderEmployees(); updateLastUpdate(); showToast('🗑️ Cleared'); }); }
     function toggleDark(on) { document.documentElement.setAttribute('data-theme', on ? 'dark' : ''); DB.settings.dark = on; saveDB();['night-toggle', 'dark-mode-settings'].forEach(id => { const el = document.getElementById(id); if (el) el.checked = on; }); document.getElementById('night-btn').classList.toggle('active', on); setTimeout(renderCharts, 100); }
     function toggleNight() { toggleDark(document.documentElement.getAttribute('data-theme') !== 'dark'); }
-    function loadSettings() { if (DB.settings.dark) toggleDark(true); }
+    function loadSettings() { if (DB.settings.dark) toggleDark(true); if (DB.settings.sidebarCollapsed) { document.body.classList.add('sidebar-collapsed'); const btn = document.getElementById('sidebar-toggle-btn'); if (btn) btn.textContent = '▶'; } }
     function triggerSync() { const icon = document.getElementById('sync-icon'); icon.classList.add('spin'); setTimeout(() => { icon.classList.remove('spin'); renderAll(); renderDW(); renderEmployees(); updateLastUpdate(); showToast('✅ Refreshed!'); }, 700); }
     function updateBadges() { document.getElementById('abbyy-badge').textContent = DB.abbyy.length; document.getElementById('xc-badge').textContent = DB.xc.length; }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
@@ -4678,15 +4868,50 @@
     function closeModal() { document.getElementById('modal-confirm').classList.remove('show'); }
 
 
- 
+
+    // ============================================================
+    // LOADING SCREEN
+    // ============================================================
+    function showLoader(msg) {
+      const s = document.getElementById('loader-status');
+      if (s) s.textContent = msg || 'Loading...';
+    }
+    function hideLoader() {
+      const l = document.getElementById('app-loader');
+      if (!l) return;
+      l.classList.add('fade-out');
+      setTimeout(() => { l.style.display = 'none'; }, 500);
+    }
+    // ============================================================
+    // SIDEBAR COLLAPSE
+    // ============================================================
+    function toggleSidebarCollapse() {
+      const collapsed = document.body.classList.toggle('sidebar-collapsed');
+      const btn = document.getElementById('sidebar-toggle-btn');
+      if (btn) btn.textContent = collapsed ? '▶' : '◀';
+      DB.settings.sidebarCollapsed = collapsed;
+      saveDB();
+    }
+
     // For global functions that need to be called from HTML
     window.setPivotLoc = setPivotLoc;
     window.setPivotReason = setPivotReason;
     window.setAbbyyPivotBy = setAbbyyPivotBy;
     window.setPrimaryPivotBy = setPrimaryPivotBy;
+    window.setPrimaryPivotLoc = setPrimaryPivotLoc;
+    window.setSecPivotLoc = setSecPivotLoc;
     window.filterDashCW = filterDashCW;
     window.clearDashCWFilters = clearDashCWFilters;
     window.sortDashCW = sortDashCW;
+  </script>
+  <script>
+    // Hide initial loader once fonts/DOM are ready — show login
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const l = document.getElementById('app-loader');
+        if (l) { l.classList.add('fade-out'); setTimeout(() => { l.style.display='none'; }, 500); }
+      }, 800);
+    });
   </script>
 </body>
 
