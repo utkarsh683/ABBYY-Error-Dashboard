@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1041,6 +1040,11 @@
       scrollbar-color: var(--blue) var(--border)
     }
 
+    .table-wrap.scroll-y {
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
     .table-wrap::-webkit-scrollbar {
       height: 4px
     }
@@ -1101,11 +1105,24 @@
       padding: 8px 10px;
       border: 1px solid var(--border);
       white-space: nowrap;
-      font-size: 12px
+      font-size: 12px;
+      transition: background .1s;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, var(--bg) 60%, var(--card));
     }
 
     tr:hover td {
-      background: var(--bg)
+      background: var(--blue-light) !important;
+    }
+    
+    .insight-tbl tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, var(--bg) 50%, var(--card));
+    }
+    
+    .pivot-tbl tbody tr:nth-child(even) td {
+      background: color-mix(in srgb, var(--bg) 50%, var(--card));
     }
 
     .td-bold {
@@ -1985,19 +2002,26 @@
     @keyframes loaderSlide { 0%{width:0;margin-left:0} 50%{width:100%;margin-left:0}
       100%{width:0;margin-left:100%} }
 
-    /* SIDEBAR COLLAPSE BUTTON */
-    .sidebar-toggle-btn {
-      position: fixed; top: calc(var(--header-h) + 12px); left: calc(var(--sidebar-w) - 14px);
-      width: 28px; height: 28px; background: var(--card); border: 1px solid var(--border);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 150; box-shadow: var(--shadow);
-      transition: all .3s; font-size: 11px; color: var(--muted);
+    /* RESIZABLE SIDEBAR */
+    .sidebar-resize-handle {
+      position: fixed; top: var(--header-h); bottom: 0; width: 6px;
+      left: calc(var(--sidebar-w) - 3px);
+      cursor: col-resize; z-index: 200; background: transparent;
+      transition: background .15s;
     }
-    .sidebar-toggle-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
-    body.sidebar-collapsed .sidebar-toggle-btn { left: 10px; }
-    body.sidebar-collapsed .sidebar { transform: translateX(calc(-1 * var(--sidebar-w) + 0px)); }
-    body.sidebar-collapsed .main { margin-left: 0; }
-    @media(max-width:768px) { .sidebar-toggle-btn { display: none; } }
+    .sidebar-resize-handle:hover, .sidebar-resize-handle.dragging {
+      background: var(--blue); opacity: .45;
+    }
+    .sidebar { transition: width .0s; }
+    body.sidebar-collapsed .sidebar { overflow: hidden; }
+    body.sidebar-collapsed .sidebar .sidebar-label,
+    body.sidebar-collapsed .sidebar .ni-badge,
+    body.sidebar-collapsed .sidebar .side-panel { display: none !important; }
+    body.sidebar-collapsed .sidebar .nav-item { justify-content: center; padding: 9px 4px; font-size:0; }
+    body.sidebar-collapsed .sidebar .nav-item .ni-icon { font-size: 17px; width:20px; height:20px; }
+    body.sidebar-collapsed .sidebar .sidebar-section { padding: 0 4px 8px; }
+    body.sidebar-collapsed .sidebar .sidebar-divider { margin: 4px 6px; }
+    @media(max-width:768px) { .sidebar-resize-handle { display: none; } }
 
 
     /* PRINT BUTTON */
@@ -2067,18 +2091,177 @@
     }
 
     ::-webkit-scrollbar {
-      width: 4px;
-      height: 4px
+      width: 6px;
+      height: 8px
     }
 
     ::-webkit-scrollbar-track {
-      background: transparent
-    }
-
-    ::-webkit-scrollbar-thumb {
       background: var(--border);
       border-radius: 10px
     }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--blue);
+      border-radius: 10px
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--blue-dark)
+    }
+    /* Horizontal scroll always visible for table wraps */
+    .table-wrap {
+      overflow-x: auto !important;
+      scrollbar-width: thin;
+      scrollbar-color: var(--blue) var(--border);
+    }
+    .table-wrap::-webkit-scrollbar { height: 8px; }
+    .table-wrap::-webkit-scrollbar-track { background: var(--border); border-radius: 10px; }
+    .table-wrap::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
+
+
+    /* ADVANCED MULTI-SELECT FILTER */
+    .adv-filter-bar {
+      display: flex; gap: 6px; align-items: center;
+      background: var(--card); padding: 8px 12px;
+      border-radius: 10px; border: 1px solid var(--border);
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .adv-filter-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 11px; border: 1.5px solid var(--border);
+      border-radius: 7px; font-size: 12px; font-weight: 600;
+      background: var(--bg); color: var(--text);
+      cursor: pointer; position: relative; white-space: nowrap;
+      transition: all .2s;
+    }
+    .adv-filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .adv-filter-btn.has-filter { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+    .adv-filter-btn .filter-icon { font-size: 11px; }
+    .adv-filter-count { 
+      background: var(--blue); color: white; 
+      border-radius: 10px; font-size: 9px; font-weight: 700;
+      padding: 1px 5px; min-width: 16px; text-align: center;
+    }
+    .adv-dropdown {
+      position: absolute; top: calc(100% + 6px); left: 0;
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 10px; min-width: 240px; max-width: 300px;
+      z-index: 500; box-shadow: 0 8px 30px rgba(0,0,0,.15);
+      display: none; padding: 8px;
+    }
+    .adv-dropdown.open { display: block; }
+    .adv-dropdown-search {
+      width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: 7px; font-size: 12px; background: var(--bg);
+      color: var(--text); outline: none; margin-bottom: 6px;
+    }
+    .adv-dropdown-search:focus { border-color: var(--blue); }
+    .adv-dropdown-list {
+      max-height: 200px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .adv-opt {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 8px; border-radius: 6px; cursor: pointer;
+      font-size: 12px; transition: background .1s;
+    }
+    .adv-opt:hover { background: var(--bg); }
+    .adv-opt input[type=checkbox] { width: 13px; height: 13px; accent-color: var(--blue); cursor: pointer; }
+    .adv-opt label { cursor: pointer; flex: 1; }
+    .adv-dropdown-footer {
+      display: flex; gap: 5px; padding-top: 7px;
+      border-top: 1px solid var(--border); margin-top: 6px;
+    }
+    .adv-footer-btn {
+      flex: 1; padding: 4px 0; border-radius: 6px; font-size: 11px;
+      font-weight: 600; cursor: pointer; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); transition: all .2s;
+    }
+    .adv-footer-btn:hover { background: var(--blue); color: white; border-color: var(--blue); }
+    .adv-footer-btn.apply { background: var(--blue); color: white; border-color: var(--blue); }
+    .adv-footer-btn.apply:hover { background: var(--blue-dark); }
+
+
+    /* Creative table row rank highlights */
+    .rank-gold td { background: linear-gradient(90deg, #fef9c3, var(--card)) !important; }
+    .rank-silver td { background: linear-gradient(90deg, #f1f5f9, var(--card)) !important; }
+    .rank-bronze td { background: linear-gradient(90deg, #fef3c7, var(--card)) !important; }
+    .rank-gold:hover td, .rank-silver:hover td, .rank-bronze:hover td { filter: brightness(0.96); }
+    
+    /* Table card creative header */
+    .table-card { border-top: 3px solid var(--blue); }
+    .insight-card.ic-red { border-top: 3px solid var(--red) !important; }
+    .insight-card.ic-green2 { border-top: 3px solid var(--green) !important; }
+    
+    /* Metric card gradient border */
+    .metric-card { border-left: 3px solid var(--blue); }
+    .metric-card:nth-child(2) { border-left-color: var(--red); }
+    .metric-card:nth-child(3) { border-left-color: var(--orange); }
+    .metric-card:nth-child(4) { border-left-color: var(--green); }
+    .metric-card:nth-child(5) { border-left-color: var(--purple); }
+    .metric-card:nth-child(6) { border-left-color: var(--yellow); }
+    
+    /* Scrollbar track visible */
+    .scroll-indicator-bar { 
+      height: 4px !important; 
+      background: var(--border) !important; 
+      border-radius: 4px !important; 
+      margin-top: 6px !important;
+      overflow: visible !important;
+    }
+
+    /* PIVOT MULTI-SELECT FILTER */
+    .piv-ms-wrap { position: relative; display: inline-block; }
+    .piv-ms-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 7px; font-size: 11px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--border); background: var(--bg);
+      color: var(--text); transition: all .2s; white-space: nowrap;
+    }
+    .piv-ms-btn:hover { border-color: var(--blue); }
+    .piv-ms-btn.has-filter { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+    .piv-ms-count {
+      background: var(--blue); color: white; border-radius: 10px;
+      font-size: 9px; font-weight: 700; padding: 1px 5px; min-width: 16px; text-align: center;
+    }
+    .piv-ms-drop {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 500;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12); min-width: 220px; max-width: 280px;
+    }
+    .piv-ms-drop.open { display: block; }
+    .piv-ms-search {
+      width: 100%; padding: 8px 10px; border: none; border-bottom: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 12px; border-radius: 8px 8px 0 0;
+      outline: none;
+    }
+    .piv-ms-list {
+      max-height: 200px; overflow-y: auto; padding: 4px 0;
+      scrollbar-width: thin; scrollbar-color: var(--blue) var(--border);
+    }
+    .piv-ms-opt {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 10px; cursor: pointer; font-size: 12px;
+    }
+    .piv-ms-opt:hover { background: var(--blue-light); }
+    .piv-ms-opt input[type=checkbox] { accent-color: var(--blue); width: 13px; height: 13px; }
+    .piv-ms-opt label { cursor: pointer; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .piv-ms-footer {
+      display: flex; justify-content: space-between; padding: 6px 10px;
+      border-top: 1px solid var(--border); gap: 6px;
+    }
+    .piv-ms-footer-btn {
+      flex: 1; padding: 5px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--muted);
+      transition: all .15s;
+    }
+    .piv-ms-footer-btn.apply { background: var(--blue); color: white; border-color: var(--blue); }
+    .piv-ms-footer-btn.apply:hover { background: var(--blue-dark); }
+
+    /* Pivot table show-10 with scroll-all */
+    .pivot-table-inner { max-height: 340px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--blue) var(--border); }
+    .pivot-table-inner::-webkit-scrollbar { width: 4px; }
+    .pivot-table-inner::-webkit-scrollbar-track { background: var(--border); }
+    .pivot-table-inner::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
 
     @media print {
 
@@ -2118,8 +2301,7 @@
     </div>
   </div>
 
-  <!-- SIDEBAR COLLAPSE BUTTON -->
-  <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar">◀</button>
+  <div class="sidebar-resize-handle" id="sidebar-resize-handle" title="Drag to resize sidebar"></div>
 
   <!-- LOGIN -->
   <div id="login-screen">
@@ -2134,7 +2316,7 @@
             <div class="login-title">JB ABBYY-ERROR</div>
           </div>
         </div>
-        <div class="login-subtitle">Dashboard v17 — Please sign in</div>
+        <div class="login-subtitle">Dashboard v18 — Please sign in</div>
         <div class="login-tabs"><button class="login-tab active" id="ltab-admin" onclick="switchLoginTab('admin')">🔐
             Admin</button><button class="login-tab" id="ltab-user" onclick="switchLoginTab('user')">👤 User</button>
         </div>
@@ -2162,7 +2344,7 @@
           </svg></div>
         <div>
           <div class="logo-text">JB ABBYY-ERROR</div>
-          <div class="logo-sub">v17</div>
+          <div class="logo-sub">v18</div>
         </div>
       </div>
       <div class="header-spacer"></div>
@@ -2266,7 +2448,7 @@
           <div class="page-sub">Auto-updated from uploaded data</div>
           <!-- Center Filter -->
           <div class="filter-bar">
-            <span class="filter-label">Center:</span>
+            <span style="font-size:14px;cursor:default" title="Filter">⚡</span><span class="filter-label">Filters:</span>
             <div class="cs-wrap"><select id="center-select" onchange="setCenterFromSelect(this.value)">
                 <option value="all">🌐 All</option>
                 <option value="Ahmedabad">🔵 Ahmedabad</option>
@@ -2381,9 +2563,14 @@
               <div
                 style="display:flex;gap:6px;padding:6px 10px;background:var(--bg);border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
                 <input type="text" class="filter-input" id="top10-abbyy-search" placeholder="🔍 Filter..."
-                  oninput="renderTop10()" style="width:130px;font-size:11px">
+                  oninput="renderTop10()" style="width:120px;font-size:11px">
+                <select class="filter-input" id="top10-abbyy-loc" onchange="renderTop10()" style="font-size:11px;max-width:110px">
+                  <option value="">📍 All Centers</option>
+                  <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
+                  <option>Vadodara-WFH</option><option>Mangalore</option><option>Chennai</option>
+                </select>
                 <select class="filter-input" id="top10-abbyy-sort" onchange="renderTop10()"
-                  style="font-size:11px;max-width:120px">
+                  style="font-size:11px;max-width:110px">
                   <option value="errors">Most Errors</option>
                   <option value="az">A → Z</option>
                   <option value="za">Z → A</option>
@@ -2402,7 +2589,7 @@
                         <th>#</th>
                         <th>Operator</th>
                         <th>Earnings</th>
-                        <th>ABBYY Errors</th>
+                        <th><span style="color:var(--red)">⚠ ABBYY Errors</span></th>
                         <th>Center</th>
                         <th>Status</th>
                       </tr>
@@ -2426,9 +2613,14 @@
               <div
                 style="display:flex;gap:6px;padding:6px 10px;background:var(--bg);border-top:1px solid var(--border);align-items:center;flex-wrap:wrap">
                 <input type="text" class="filter-input" id="top10-prod-search" placeholder="🔍 Filter..."
-                  oninput="renderTop10()" style="width:130px;font-size:11px">
+                  oninput="renderTop10()" style="width:115px;font-size:11px">
+                <select class="filter-input" id="top10-prod-loc" onchange="renderTop10()" style="font-size:11px;max-width:110px">
+                  <option value="">📍 All Centers</option>
+                  <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
+                  <option>Vadodara-WFH</option><option>Mangalore</option><option>Chennai</option>
+                </select>
                 <select class="filter-input" id="top10-prod-sort" onchange="renderTop10()"
-                  style="font-size:11px;max-width:130px">
+                  style="font-size:11px;max-width:115px">
                   <option value="count">Most Line Count</option>
                   <option value="earnings">Earnings ↓</option>
                   <option value="az">A → Z</option>
@@ -2446,7 +2638,7 @@
                         <th>Operator</th>
                         <th>Line Count</th>
                         <th>Earnings</th>
-                        <th>Errors</th>
+                        <th><span style="color:var(--red)">⚠ ABBYY Errors</span></th>
                         <th>Center</th>
                       </tr>
                     </thead>
@@ -2491,7 +2683,7 @@
                   onclick="openViewAll('summary')">👁 All</button></div>
             </div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="dash-table">
                   <thead>
                     <tr>
@@ -2518,10 +2710,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;padding:7px 0 0;">
               <div id="dash-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="dash-pag"></div>
+              <div id="dash-pag" style="display:none"></div>
             </div>
           </div>
 
@@ -2556,7 +2747,7 @@
             </div>
             <div id="dash-dw-op-overview" style="display:none"></div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="dash-dw-table">
                   <thead>
                     <tr>
@@ -2580,10 +2771,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;padding:7px 0 0;">
               <div id="dash-dw-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="dash-dw-pag"></div>
+              <div id="dash-dw-pag" style="display:none"></div>
             </div>
           </div>
 
@@ -2595,6 +2785,7 @@
                 <span class="cnt-badge" id="dash-cw-badge">0</span>
               </div>
               <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font-size:10px;font-weight:700;color:var(--muted)">📍</span>
                 <select class="filter-input" id="dash-cw-center-filter" onchange="filterDashCW()" style="max-width:130px">
                   <option value="">🌐 All Centers</option>
                   <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
@@ -2602,18 +2793,18 @@
                 </select>
                 <input type="text" class="filter-input" id="dash-cw-queue-search" placeholder="🔍 Search queue..."
                   oninput="filterDashCW()" style="width:150px">
-                <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">✕</button>
-                <button class="print-btn" onclick="printSection('dash-cw-table','Center + Queue Performance')">🖨️</button>
+                <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">✕ Clear</button>
+                <button class="print-btn" onclick="printSection('dash-cw-table','Center + Queue Performance')">🖨️ Print</button>
                 <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-table','CQ_Performance')">📥</button>
               </div>
             </div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="dash-cw-table">
                   <thead>
                     <tr>
-                      <th class="sortable" onclick="sortDashCW('center',this)">Center</th>
-                      <th class="sortable" onclick="sortDashCW('queue',this)">Queue</th>
+                      <th class="sortable" onclick="sortDashCW('center',this)" title="Click to sort A→Z / Z→A">Center</th>
+                      <th class="sortable" onclick="sortDashCW('queue',this)" title="Click to sort A→Z / Z→A">Queue</th>
                       <th class="sortable sort-desc" onclick="sortDashCW('count',this)">Line Count</th>
                       <th>Earnings</th>
                       <th>Performance</th>
@@ -2624,9 +2815,9 @@
                 </table>
               </div>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;padding:7px 0 0;">
               <div id="dash-cw-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="dash-cw-pag"></div>
+              <div id="dash-cw-pag" style="display:none"></div>
             </div>
           </div>
         </div>
@@ -2637,7 +2828,7 @@
           <div class="qpills-wrap" id="abbyy-qpills"><span class="filter-label">Error Type:</span><button
               class="qpill active" onclick="setAbbyyQ('',this)">All</button></div>
           <div class="filter-bar">
-            <input type="text" class="filter-input" id="abbyy-search" placeholder="🔍 Search by operator ID, email, invoice..."
+            <input type="text" class="filter-input" id="abbyy-search" placeholder="🔍 Search by Primary Operator..."
               oninput="filterAbbyy()" style="width:210px"><button class="btn btn-outline btn-sm"
               onclick="clearAbbyySearch()">✕</button><span class="filter-sep"></span>
             <div class="date-range-grp"><span>From:</span><input type="date" class="filter-input" id="abbyy-from"
@@ -2706,6 +2897,99 @@
               onclick="exportTableToExcel('abbyy-data-table','ABBYY_Errors')">📥</button>
             <button class="btn btn-primary btn-sm" onclick="openViewAll('abbyy')">👁 All</button>
           </div>
+
+          <!-- Advanced Unified Smart Filter -->
+          <div class="adv-filter-bar" id="abbyy-adv-filter-bar">
+            <span style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">⚡ Smart Filters:</span>
+            
+            <!-- Operator Multi-select -->
+            <div style="position:relative" id="adv-op-wrap">
+              <button class="adv-filter-btn" id="adv-op-btn" onclick="toggleAdvDropdown('adv-op-drop', event)">
+                <span class="filter-icon">👤</span> Operator
+                <span class="adv-filter-count" id="adv-op-count" style="display:none">0</span>
+                <span style="font-size:9px;color:var(--muted)">▾</span>
+              </button>
+              <div class="adv-dropdown" id="adv-op-drop">
+                <input type="text" class="adv-dropdown-search" placeholder="🔍 Search operators..." oninput="filterAdvOpts('adv-op-list', this.value)">
+                <div class="adv-dropdown-list" id="adv-op-list"></div>
+                <div class="adv-dropdown-footer">
+                  <button class="adv-footer-btn" onclick="clearAdvSel('adv-op-list','adv-op-count','adv-op-btn'); applyAdvFilters()">Clear</button>
+                  <button class="adv-footer-btn" onclick="selectAllAdvOpts('adv-op-list')">All</button>
+                  <button class="adv-footer-btn apply" onclick="applyAdvFilters(); closeAdvDropdown('adv-op-drop')">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center Multi-select -->
+            <div style="position:relative" id="adv-ctr-wrap">
+              <button class="adv-filter-btn" id="adv-ctr-btn" onclick="toggleAdvDropdown('adv-ctr-drop', event)">
+                <span class="filter-icon">🏢</span> Center
+                <span class="adv-filter-count" id="adv-ctr-count" style="display:none">0</span>
+                <span style="font-size:9px;color:var(--muted)">▾</span>
+              </button>
+              <div class="adv-dropdown" id="adv-ctr-drop">
+                <div class="adv-dropdown-list" id="adv-ctr-list">
+                  <div class="adv-opt"><input type="checkbox" id="advc-Ahmedabad" value="Ahmedabad" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Ahmedabad">🔵 Ahmedabad</label></div>
+                  <div class="adv-opt"><input type="checkbox" id="advc-Karjan" value="Karjan" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Karjan">🟢 Karjan</label></div>
+                  <div class="adv-opt"><input type="checkbox" id="advc-Vadodara" value="Vadodara" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Vadodara">🟠 Vadodara</label></div>
+                  <div class="adv-opt"><input type="checkbox" id="advc-Vadodara-WFH" value="Vadodara-WFH" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Vadodara-WFH">🟡 Vadodara-WFH</label></div>
+                  <div class="adv-opt"><input type="checkbox" id="advc-Mangalore" value="Mangalore" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Mangalore">🟤 Mangalore</label></div>
+                  <div class="adv-opt"><input type="checkbox" id="advc-Chennai" value="Chennai" onchange="updateAdvCount('adv-ctr-list','adv-ctr-count','adv-ctr-btn')"><label for="advc-Chennai">🟣 Chennai</label></div>
+                </div>
+                <div class="adv-dropdown-footer">
+                  <button class="adv-footer-btn" onclick="clearAdvSel('adv-ctr-list','adv-ctr-count','adv-ctr-btn'); applyAdvFilters()">Clear</button>
+                  <button class="adv-footer-btn apply" onclick="applyAdvFilters(); closeAdvDropdown('adv-ctr-drop')">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Queue Multi-select -->
+            <div style="position:relative" id="adv-q-wrap">
+              <button class="adv-filter-btn" id="adv-q-btn" onclick="toggleAdvDropdown('adv-q-drop', event)">
+                <span class="filter-icon">📋</span> Queue
+                <span class="adv-filter-count" id="adv-q-count" style="display:none">0</span>
+                <span style="font-size:9px;color:var(--muted)">▾</span>
+              </button>
+              <div class="adv-dropdown" id="adv-q-drop">
+                <input type="text" class="adv-dropdown-search" placeholder="🔍 Search queues..." oninput="filterAdvOpts('adv-q-list', this.value)">
+                <div class="adv-dropdown-list" id="adv-q-list"></div>
+                <div class="adv-dropdown-footer">
+                  <button class="adv-footer-btn" onclick="clearAdvSel('adv-q-list','adv-q-count','adv-q-btn'); applyAdvFilters()">Clear</button>
+                  <button class="adv-footer-btn apply" onclick="applyAdvFilters(); closeAdvDropdown('adv-q-drop')">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date Range -->
+            <div style="position:relative" id="adv-date-wrap">
+              <button class="adv-filter-btn" id="adv-date-btn" onclick="toggleAdvDropdown('adv-date-drop', event)">
+                <span class="filter-icon">📅</span> Date
+                <span class="adv-filter-count" id="adv-date-count" style="display:none">✓</span>
+                <span style="font-size:9px;color:var(--muted)">▾</span>
+              </button>
+              <div class="adv-dropdown" id="adv-date-drop" style="min-width:220px">
+                <div style="display:flex;flex-direction:column;gap:7px;padding:4px 0">
+                  <div><label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">From</label>
+                    <input type="date" id="adv-from" class="adv-dropdown-search" onchange="updateAdvDateCount()"></div>
+                  <div><label style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px">To</label>
+                    <input type="date" id="adv-to" class="adv-dropdown-search" onchange="updateAdvDateCount()"></div>
+                </div>
+                <div class="adv-dropdown-footer">
+                  <button class="adv-footer-btn" onclick="document.getElementById('adv-from').value='';document.getElementById('adv-to').value='';updateAdvDateCount();applyAdvFilters()">Clear</button>
+                  <button class="adv-footer-btn apply" onclick="applyAdvFilters();closeAdvDropdown('adv-date-drop')">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-outline btn-sm" onclick="clearAllAdvFilters()" style="font-size:11px">✕ Clear All</button>
+            <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
+              <span style="font-size:11px;color:var(--muted)" id="adv-filter-status"></span>
+              <button class="print-btn" onclick="printSection('abbyy-data-table','ABBYY_Errors')">🖨️ Print</button>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('abbyy-data-table','ABBYY_Errors')">📥</button>
+              <button class="btn btn-primary btn-sm" onclick="openViewAll('abbyy')">👁 All</button>
+            </div>
+          </div>
+
           <div id="abbyy-op-overview" style="display:none"></div>
           <div class="table-card">
             <div class="table-header">
@@ -2715,7 +2999,7 @@
               </div>
             </div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="abbyy-data-table">
                   <thead>
                     <tr>
@@ -2741,10 +3025,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
               <div id="abbyy-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="abbyy-pag"></div>
+              <div id="abbyy-pag" style="display:none"></div>
             </div>
           </div>
 
@@ -2769,6 +3052,23 @@
               <button class="btn btn-outline btn-sm"
                 onclick="document.getElementById('primary-piv-search').value=''; renderAbbyyPrimaryPivot()">✕ Clear</button>
               <span class="filter-sep"></span>
+              <!-- Primary Operator Multi-Select Filter -->
+              <div class="piv-ms-wrap" id="prim-op-ms-wrap">
+                <button class="piv-ms-btn" id="prim-op-ms-btn" onclick="togglePivMSDrop('prim-op-ms-drop',event)">
+                  👤 Filter Operator
+                  <span class="piv-ms-count" id="prim-op-ms-count" style="display:none">0</span>
+                  <span style="font-size:9px;color:var(--muted)">▾</span>
+                </button>
+                <div class="piv-ms-drop" id="prim-op-ms-drop">
+                  <input type="text" class="piv-ms-search" placeholder="🔍 Search operators..." oninput="filterPivMSOpts('prim-op-ms-list',this.value)">
+                  <div class="piv-ms-list" id="prim-op-ms-list"></div>
+                  <div class="piv-ms-footer">
+                    <button class="piv-ms-footer-btn" onclick="clearPivMSSel('prim-op-ms-list','prim-op-ms-count','prim-op-ms-btn'); renderAbbyyPrimaryPivot()">Clear</button>
+                    <button class="piv-ms-footer-btn apply" onclick="renderAbbyyPrimaryPivot(); closePivMSDrop('prim-op-ms-drop')">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <span class="filter-sep"></span>
               <select class="filter-input" id="primary-piv-loc" onchange="setPrimaryPivotLoc(this.value)" style="max-width:150px">
                 <option value="">🌐 All Locations</option>
                 <option>Ahmedabad</option>
@@ -2787,10 +3087,12 @@
             </div>
             <div class="scroll-wrap">
               <div class="table-wrap">
+                <div class="pivot-table-inner" id="primary-piv-inner">
                 <table id="abbyy-primary-pivot-table" class="pivot-tbl">
                   <thead id="abbyy-primary-pivot-thead"></thead>
                   <tbody id="abbyy-primary-pivot-tbody"></tbody>
                 </table>
+                </div>
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
@@ -2817,6 +3119,23 @@
               <button class="btn btn-outline btn-sm"
                 onclick="document.getElementById('piv-search').value=''; renderAbbyyPivot()">✕ Clear</button>
               <span class="filter-sep"></span>
+              <!-- Secondary Operator Multi-Select Filter -->
+              <div class="piv-ms-wrap" id="sec-op-ms-wrap">
+                <button class="piv-ms-btn" id="sec-op-ms-btn" onclick="togglePivMSDrop('sec-op-ms-drop',event)">
+                  👥 Filter Sec Op
+                  <span class="piv-ms-count" id="sec-op-ms-count" style="display:none">0</span>
+                  <span style="font-size:9px;color:var(--muted)">▾</span>
+                </button>
+                <div class="piv-ms-drop" id="sec-op-ms-drop">
+                  <input type="text" class="piv-ms-search" placeholder="🔍 Search operators..." oninput="filterPivMSOpts('sec-op-ms-list',this.value)">
+                  <div class="piv-ms-list" id="sec-op-ms-list"></div>
+                  <div class="piv-ms-footer">
+                    <button class="piv-ms-footer-btn" onclick="clearPivMSSel('sec-op-ms-list','sec-op-ms-count','sec-op-ms-btn'); renderAbbyyPivot()">Clear</button>
+                    <button class="piv-ms-footer-btn apply" onclick="renderAbbyyPivot(); closePivMSDrop('sec-op-ms-drop')">Apply</button>
+                  </div>
+                </div>
+              </div>
+              <span class="filter-sep"></span>
               <select class="filter-input" id="sec-piv-loc" onchange="setSecPivotLoc(this.value)" style="max-width:150px">
                 <option value="">🌐 All Locations</option>
                 <option>Ahmedabad</option>
@@ -2835,10 +3154,12 @@
             </div>
             <div class="scroll-wrap">
               <div class="table-wrap">
+                <div class="pivot-table-inner" id="sec-piv-inner">
                 <table id="abbyy-pivot-table" class="pivot-tbl">
                   <thead id="abbyy-pivot-thead"></thead>
                   <tbody id="abbyy-pivot-tbody"></tbody>
                 </table>
+                </div>
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
@@ -2900,7 +3221,7 @@
               </div>
             </div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="xc-data-table">
                   <thead>
                     <tr>
@@ -2928,10 +3249,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;padding:7px 0 0;">
               <div id="xc-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="xc-pag"></div>
+              <div id="xc-pag" style="display:none"></div>
             </div>
           </div>
         </div>
@@ -3071,7 +3391,7 @@
               </div>
             </div>
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="daywise-table">
                   <thead>
                     <tr>
@@ -3095,10 +3415,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;padding:7px 0 0;">
               <div id="dw-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="dw-pag"></div>
+              <div id="dw-pag" style="display:none"></div>
             </div>
           </div>
         </div>
@@ -3227,7 +3546,7 @@
           <div id="emp-op-overview" style="display:none"></div>
           <div class="table-card">
             <div class="scroll-wrap">
-              <div class="table-wrap">
+              <div class="table-wrap scroll-y">
                 <table id="emp-table">
                   <thead>
                     <tr>
@@ -3253,10 +3572,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div
-              style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
               <div id="emp-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div class="pagination" id="emp-pag"></div>
+              <div id="emp-pag" style="display:none"></div>
             </div>
           </div>
         </div>
@@ -3442,7 +3760,7 @@
             </div>
           </div>
           <div class="settings-section">
-            <div class="settings-title">ℹ️ v17 Changes</div>
+            <div class="settings-title">ℹ️ v18 Changes</div>
             <div style="font-size:12px;line-height:2;color:var(--muted)">
               <div>✅ All tables have scroll indicators</div>
               <div>✅ From/To date range on all pages</div>
@@ -3482,7 +3800,7 @@
           </table>
         </div>
       </div>
-      <!-- <div class="scroll-indicator-bar"></div> -->
+      <div class="scroll-indicator-bar"></div>
       <div style="font-size:11px;color:var(--muted);margin-top:7px" id="va-count"></div>
     </div>
   </div>
@@ -3520,6 +3838,18 @@
     let abbyyQF = '', xcQF = '';
     let abbyyPivotBy = 'location', pivotLocFilter = '', pivotReasonFilter = '';
     let vaAllData = [];
+
+    let primaryPivotSortDir = 1; // 1=asc, -1=desc
+    let secPivotSortDir = 1;
+    function togglePrimaryPivotSort() {
+      primaryPivotSortDir *= -1;
+      renderAbbyyPrimaryPivot();
+    }
+    function toggleSecPivotSort() {
+      secPivotSortDir *= -1;
+      renderAbbyyPivot();
+    }
+
     let primaryPivotDim = 'reason';
     let primaryPivotLocFilter = '';
     let secPivotLocFilter = '';
@@ -3533,11 +3863,7 @@
     function doLogout() { currentUser = null; document.getElementById('login-screen').style.display = 'block'; document.getElementById('app-screen').style.display = 'none';['login-user', 'login-pass'].forEach(id => document.getElementById(id).value = ''); document.getElementById('login-error').style.display = 'none'; }
     function applyRoleUI() { const a = currentUser.role === 'admin'; document.getElementById('hdr-avatar').textContent = a ? 'A' : 'U'; document.getElementById('hdr-user').textContent = a ? 'Admin' : 'User'; const rp = document.getElementById('hdr-role'); rp.textContent = a ? 'Admin' : 'User'; rp.className = 'role-pill ' + (a ? 'role-admin' : 'role-user'); document.getElementById('admin-export-btn').style.display = a ? 'flex' : 'none'; document.querySelectorAll('.admin-nav').forEach(el => el.style.display = a ? 'flex' : 'none'); }
     function initApp() {
-      if (DB.settings.sidebarCollapsed) {
-        document.body.classList.add('sidebar-collapsed');
-        const btn = document.getElementById('sidebar-toggle-btn');
-        if (btn) btn.textContent = '▶';
-      } loadDB(); renderAll(); renderDW(); updateSidePanel(); updateStorageInfo(); loadSettings(); document.getElementById('sp-date').textContent = new Date().toISOString().split('T')[0]; if (DB.gsync.sheetId) document.getElementById('gsync-sheet-id').value = DB.gsync.sheetId; if (DB.gsync.apiKey) document.getElementById('gsync-api-key').value = DB.gsync.apiKey; if (DB.gsync.connected) reconnectGSheet(); if (!DB.summary.length && !DB.daywise.length) loadSampleData(); updateLastUpdate(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); }
+      loadDB(); renderAll(); renderDW(); updateSidePanel(); updateStorageInfo(); loadSettings(); document.getElementById('sp-date').textContent = new Date().toISOString().split('T')[0]; if (DB.gsync.sheetId) document.getElementById('gsync-sheet-id').value = DB.gsync.sheetId; if (DB.gsync.apiKey) document.getElementById('gsync-api-key').value = DB.gsync.apiKey; if (DB.gsync.connected) reconnectGSheet(); if (!DB.summary.length && !DB.daywise.length) loadSampleData(); updateLastUpdate(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); populateAdvFilterDropdowns(); }
     function saveDB() { try { localStorage.setItem('jb_v17', JSON.stringify(DB)); } catch (e) { } }
     function loadDB() { try { const d = localStorage.getItem('jb_v17') || localStorage.getItem('jb_dash_v16') || localStorage.getItem('jb_abbyy_db15'); if (d) { const p = JSON.parse(d); DB = { ...DB, ...p }; } } catch (e) { } }
     function updateStorageInfo() { const s = JSON.stringify(DB).length; const el = document.getElementById('storage-info'); if (el) el.innerHTML = `<div>Summary: <b>${DB.summary.length}</b></div><div>ABBYY: <b>DB.abbyy.length}</b></div><div>XC: <b>${DB.xc.length}</b></div><div>Day-wise: <b>${DB.daywise.length}</b></div><div>Storage: <b>~${(s / 1024).toFixed(1)} KB</b></div>`; }
@@ -3596,6 +3922,8 @@
       return data;
     }
     function normCenter(v) { const x = String(v || '').trim(), low = x.toLowerCase().replace(/[_\s]+/g, '-'); if (!low) return ''; if (low.includes('vadodara-wfh') || low.includes('baroda-wfh') || (low.includes('vadodara') && low.includes('wfh'))) return 'Vadodara-WFH'; if (low.includes('mangalore') || low.includes('mangaluru')) return 'Mangalore'; if (low.includes('ahmedabad') || low === 'ahm') return 'Ahmedabad'; if (low.includes('karjan')) return 'Karjan'; if (low.includes('baroda') || low.includes('vadodara')) return 'Vadodara'; if (low.includes('chennai')) return 'Chennai'; return x; }
+    function fmtMoney(v) { const n=parseFloat(v)||0; return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    function fmtNum(v) { const n=parseFloat(v)||0; return n.toLocaleString('en-IN'); }
     function esc(v) { return String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
     function sameName(a, b) { const n = v => String(v || '').toLowerCase().replace(/@.*$/, '').replace(/[^a-z0-9]+/g, ' ').trim(); const na = n(a), nb = n(b); if (!na || !nb) return false; return na === nb || na.includes(nb) || nb.includes(na); }
     function empMatch(emp, row) { return [row['Primary Operator'], row['Secondary Operator'], row['Verification Operator'], row['Exception Operator'], row['Product Verification Operator']].filter(Boolean).some(s => sameName(emp['User Name'], s) || sameName(emp['Email Id'], s)); }
@@ -3671,7 +3999,7 @@
       const center = ms[0]?.['Location'] || md[0]?.['Location'] || '—'; const queue = md[0]?.['Operation Queue'] || ms[0]?.['Operation Queue'] || '—';
       const st = opStatus(ma.length, mx.length, tc);
       c.style.display = 'block';
-      c.innerHTML = `<div class="op-overview"><div class="op-overview-header"><div class="op-overview-title">👤 ${esc(name)} — Operator Overview</div><div style="display:flex;gap:5px;align-items:center"><span class="warn-tag ${st.cls}">${st.label}</span><span style="font-size:10px;color:var(--muted)">${esc(center)} · ${esc(queue)}</span><button class="btn btn-outline btn-sm" onclick="this.closest('.op-overview').parentElement.style.display='none'" style="font-size:10px;padding:2px 7px">✕ Close</button></div></div><div class="op-stats-grid"><div class="op-stat"><div class="op-stat-val mc-blue">${tc.toLocaleString()}</div><div class="op-stat-label">Line Count</div></div><div class="op-stat"><div class="op-stat-val mc-green">₹${te.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div><div class="op-stat-label">Earnings</div></div><div class="op-stat"><div class="op-stat-val mc-red">${ma.length}</div><div class="op-stat-label">ABBYY Errors</div></div><div class="op-stat"><div class="op-stat-val mc-orange">${mx.length}</div><div class="op-stat-label">XC Errors</div></div><div class="op-stat"><div class="op-stat-val mc-purple">${ce}</div><div class="op-stat-label">Cust Errors</div></div><div class="op-stat"><div class="op-stat-val" style="color:var(--yellow)">${rj}</div><div class="op-stat-label">Rejected</div></div><div class="op-stat"><div class="op-stat-val" style="color:var(--muted)">${md.length}</div><div class="op-stat-label">DW Records</div></div><div class="op-stat"><div class="op-stat-val" style="font-size:14px">${tc > 0 ? ((ma.length + mx.length) / tc * 100).toFixed(1) + '%' : '—'}</div><div class="op-stat-label">Error Rate</div></div></div></div>`;
+      c.innerHTML = `<div class="op-overview"><div class="op-overview-header"><div class="op-overview-title">👤 ${esc(name)} — Operator Overview</div><div style="display:flex;gap:5px;align-items:center"><span class="warn-tag ${st.cls}">${st.label}</span><span style="font-size:10px;color:var(--muted)">${esc(center)} · ${esc(queue)}</span><button class="btn btn-outline btn-sm" onclick="this.closest('.op-overview').parentElement.style.display='none'" style="font-size:10px;padding:2px 7px">✕ Close</button></div></div><div class="op-stats-grid"><div class="op-stat"><div class="op-stat-val mc-blue">${tc.toLocaleString()}</div><div class="op-stat-label">Line Count</div></div><div class="op-stat"><div class="op-stat-val mc-green">₹${(Math.round(te*100)/100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div><div class="op-stat-label">Earnings</div></div><div class="op-stat"><div class="op-stat-val mc-red">${ma.length}</div><div class="op-stat-label">ABBYY Errors</div></div><div class="op-stat"><div class="op-stat-val mc-orange">${mx.length}</div><div class="op-stat-label">XC Errors</div></div><div class="op-stat"><div class="op-stat-val mc-purple">${ce}</div><div class="op-stat-label">Cust Errors</div></div><div class="op-stat"><div class="op-stat-val" style="color:var(--yellow)">${rj}</div><div class="op-stat-label">Rejected</div></div><div class="op-stat"><div class="op-stat-val" style="color:var(--muted)">${md.length}</div><div class="op-stat-label">DW Records</div></div><div class="op-stat"><div class="op-stat-val" style="font-size:14px">${tc > 0 ? ((ma.length + mx.length) / tc * 100).toFixed(1) + '%' : '—'}</div><div class="op-stat-label">Error Rate</div></div></div></div>`;
     }
     function pager(pagId, infoId, total, cur, fn, ps2) { const ps = ps2 || PS; const c = document.getElementById(pagId); const info = document.getElementById(infoId); if (!c) return; const pages = Math.ceil(total / ps); if (info) info.textContent = total > 0 ? `Page ${cur} of ${pages} (${total} records)` : ''; if (pages <= 1) { c.innerHTML = ''; return; } let h = `<button class="page-btn" onclick="${fn}(1)" ${cur === 1 ? 'disabled' : ''}>«</button><button class="page-btn" onclick="${fn}(${cur - 1})" ${cur === 1 ? 'disabled' : ''}>‹</button>`; const st = Math.max(1, cur - 2), en = Math.min(pages, cur + 2); for (let i = st; i <= en; i++)h += `<button class="page-btn${i === cur ? ' active' : ''}" onclick="${fn}(${i})">${i}</button>`; h += `<button class="page-btn" onclick="${fn}(${cur + 1})" ${cur === pages ? 'disabled' : ''}>›</button><button class="page-btn" onclick="${fn}(${pages})" ${cur === pages ? 'disabled' : ''}>»</button>`; c.innerHTML = h; }
 
@@ -3687,19 +4015,27 @@
       const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op.trim() && op !== '—') { const locKey = r['Location'] || r['Location 1'] || ''; const key = op + '|||' + locKey; oErr[key] = (oErr[key] || 0) + 1; if (locKey) { oLoc[op] = oLoc[op] || {}; oLoc[op][locKey] = (oLoc[op][locKey] || 0) + 1; } } });
       let abbyyList = Object.entries(oErr).map(([key, cnt]) => { const name = key.split('|||')[0]; return { name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }; });
       if (s1) abbyyList = abbyyList.filter(r => r.name.toLowerCase().includes(s1));
+      const loc1 = document.getElementById('top10-abbyy-loc')?.value || '';
+      if (loc1) abbyyList = abbyyList.filter(r => r.loc === loc1);
       if (sort1 === 'errors') abbyyList.sort((a, b) => b.cnt - a.cnt); else if (sort1 === 'az') abbyyList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort1 === 'za') abbyyList.sort((a, b) => b.name.localeCompare(a.name)); else if (sort1 === 'earnings-hi') abbyyList.sort((a, b) => b.earn - a.earn); else if (sort1 === 'earnings-lo') abbyyList.sort((a, b) => a.earn - b.earn);
       const e1 = document.getElementById('top10-abbyy-tbody');
-      e1.innerHTML = abbyyList.slice(0, 10).map(({ name, cnt, earn, loc }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const opS = sum.find(s => sameName(s['User Name'], name)); const st = opStatus(cnt, 0, opS ? +opS['Total Count'] || 0 : 0); const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td>₹${earn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td style="font-family:'Space Mono',monospace;color:var(--red);font-weight:700">${cnt}</td><td>${cb}</td><td><span class="warn-tag ${st.cls}">${st.label}</span></td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
+      e1.innerHTML = abbyyList.slice(0, 10).map(({ name, cnt, earn, loc }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const opS = sum.find(s => sameName(s['User Name'], name)); const st = opStatus(cnt, 0, opS ? +opS['Total Count'] || 0 : 0); const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); const rankCls = i===0?'rank-gold':i===1?'rank-silver':i===2?'rank-bronze':''; return `<tr class="${rankCls}"><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td style="font-family:'Space Mono',monospace">₹${(parseFloat(earn)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td style="text-align:center"><span style="display:inline-flex;align-items:center;justify-content:center;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;min-width:36px">${cnt}</span></td><td>${cb}</td><td><span class="warn-tag ${st.cls}">${st.label}</span></td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
       
       // Performers top 10 (column header changed to Operator)
       const s2 = (document.getElementById('top10-prod-search')?.value || '').toLowerCase();
       const sort2 = document.getElementById('top10-prod-sort')?.value || 'count';
       const oc = {}; const ocEarn = {}; const ocLoc = {}; const ocQueue = {}; src.forEach(r => { const n = r['User Name']; const loc = r['Location'] || ''; const q = r['Operation Queue'] || ''; if (n) { const k = n + '|||' + loc; if (!oc[k]) { oc[k] = 0; ocEarn[k] = 0; ocLoc[k] = loc; ocQueue[k] = q; } oc[k] += (+r['Total Count'] || 0); ocEarn[k] += (+r['Total Earnings'] || 0); } });
-      let prodList = Object.entries(oc).map(([key, lc]) => { const name = key.split('|||')[0]; const loc = ocLoc[key] || '—'; const earn = ocEarn[key] || 0; const abErr = ab.filter(a => a['Primary Operator'] === name).length; const xcErr = xc.filter(x => x['Verification Operator'] === name).length; return { name, lc, earn, loc, abErr, xcErr }; });
+      let prodList = Object.entries(oc).map(([key, lc]) => { const name = key.split('|||')[0]; const loc = ocLoc[key] || '—'; const earn = ocEarn[key] || 0; const abErr = ab.filter(a =>
+  sameName(a['Primary Operator'], name)
+).length; const xcErr = xc.filter(x =>
+  sameName(x['Verification Operator'], name)
+).length; return { name, lc, earn, loc, abErr, xcErr }; });
+      const loc2 = document.getElementById('top10-prod-loc')?.value || '';
       if (s2) prodList = prodList.filter(r => r.name.toLowerCase().includes(s2));
+      if (loc2) prodList = prodList.filter(r => r.loc === loc2);
       if (sort2 === 'count') prodList.sort((a, b) => b.lc - a.lc); else if (sort2 === 'earnings') prodList.sort((a, b) => b.earn - a.earn); else if (sort2 === 'az') prodList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort2 === 'za') prodList.sort((a, b) => b.name.localeCompare(a.name));
       const e2 = document.getElementById('top10-prod-tbody');
-      e2.innerHTML = prodList.slice(0, 10).map(({ name, lc, earn, loc, abErr, xcErr }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); const totalErr = abErr + xcErr; return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--green)">${lc.toLocaleString()}</strong></td><td>₹${earn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>${totalErr > 0 ? `<span class="badge badge-red">${totalErr}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${cb}</td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
+      e2.innerHTML = prodList.slice(0, 10).map(({ name, lc, earn, loc, abErr, xcErr }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--green)">${lc.toLocaleString()}</strong></td><td>₹${(parseFloat(earn)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td style="text-align:center">${abErr > 0 ? `<span style="display:inline-flex;align-items:center;justify-content:center;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;min-width:36px">${abErr}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${cb}</td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
     }
 
     // ============================================================
@@ -3740,7 +4076,7 @@
     function renderAbbyy() {
       const s = document.getElementById('abbyy-search')?.value || ''; const cf = document.getElementById('abbyy-cf')?.value || ''; const sev = document.getElementById('abbyy-sev')?.value || ''; const fr = document.getElementById('abbyy-from')?.value || ''; const to = document.getElementById('abbyy-to')?.value || ''; const month = document.getElementById('abbyy-month')?.value || ''; const reasonFilter = document.getElementById('abbyy-reason-filter')?.value || '';
       let data = [...DB.abbyy];
-      if (s) data = data.filter(r => (r['Primary Operator'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Invoice Id'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Tenant Name'] || '').toLowerCase().includes(s.toLowerCase()) || (r['Vendor Name'] || '').toLowerCase().includes(s.toLowerCase()));
+      if (s) data = data.filter(r => (r['Primary Operator'] || '').toLowerCase().includes(s.toLowerCase()));
       if (cf) data = data.filter(r => (r['Location'] || '') === cf); if (sev) data = data.filter(r => r['Severity'] === sev);
       if (fr) data = data.filter(r => (r['Process Date'] || '') >= fr); if (to) data = data.filter(r => (r['Process Date'] || '') <= to);
       if (month) { const mi = MONTHS.indexOf(month) + 1; data = data.filter(r => { const d = new Date(r['Process Date'] || ''); return !isNaN(d) && d.getMonth() + 1 === mi; }); }
@@ -3754,9 +4090,8 @@
     function renderAbbyyPaged() {
       const data = abbyyFilt; const tbody = document.getElementById('abbyy-tbody');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; document.getElementById('abbyy-pag').innerHTML = ''; const pi = document.getElementById('abbyy-pi'); if (pi) pi.textContent = ''; return; }
-      const paged = data.slice((abbyyPage - 1) * EPS, abbyyPage * EPS);
-      tbody.innerHTML = paged.map((r, i) => `<tr><td>${(abbyyPage - 1) * EPS + i + 1}</td><td>${esc(r['Tenant Name'] || '—')}</td><td>${esc(r['Vendor Name'] || '—')}</td><td><code style="font-size:10px;background:var(--bg);padding:1px 4px;border-radius:3px">${esc(r['Invoice Id'] || '—')}</code></td><td>${esc(r['Process Date'] || '—')}</td><td><span class="badge ${r['Severity'] === 'High' ? 'badge-red' : r['Severity'] === 'Medium' ? 'badge-yellow' : 'badge-green'}">${esc(r['Severity'] || '—')}</span></td><td>${esc(r['Error Reason'] || '—')}</td><td class="td-bold">${esc(r['Primary Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Secondary Operator'] || '—')}</td><td>${esc(r['Location'] || r['Location 1'] || '—')}</td><td><span class="badge badge-orange">${esc(r['Error Type'] || '—')}</span></td></tr>`).join('');
-      pager('abbyy-pag', 'abbyy-pi', data.length, abbyyPage, 'setAbbyyPage', EPS);
+      tbody.innerHTML = data.map((r, i) => `<tr><td>${i + 1}</td><td>${esc(r['Tenant Name'] || '—')}</td><td>${esc(r['Vendor Name'] || '—')}</td><td><code style="font-size:10px;background:var(--bg);padding:1px 4px;border-radius:3px">${esc(r['Invoice Id'] || '—')}</code></td><td>${esc(r['Process Date'] || '—')}</td><td><span class="badge ${r['Severity'] === 'High' ? 'badge-red' : r['Severity'] === 'Medium' ? 'badge-yellow' : 'badge-green'}">${esc(r['Severity'] || '—')}</span></td><td>${esc(r['Error Reason'] || '—')}</td><td class="td-bold">${esc(r['Primary Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Secondary Operator'] || '—')}</td><td>${esc(r['Location'] || r['Location 1'] || '—')}</td><td><span class="badge badge-orange">${esc(r['Error Type'] || '—')}</span></td></tr>`).join('');
+      const pi = document.getElementById('abbyy-pi'); if (pi) pi.textContent = `${data.length} records`;
     }
 
     // ============================================================
@@ -3932,13 +4267,18 @@
       // OPERATORS
       // ============================================================
 
-      let secOps = Object.keys(pivMap).sort();
+      let secOps = Object.keys(pivMap).sort((a,b) => secPivotSortDir * a.localeCompare(b));
 
       if (pivSearch) {
 
         secOps = secOps.filter(op =>
           op.toLowerCase().includes(pivSearch)
         );
+      }
+
+      // Apply multi-select filter
+      if (secOpSelected && secOpSelected.length > 0) {
+        secOps = secOps.filter(op => secOpSelected.includes(op));
       }
 
       // ============================================================
@@ -3988,6 +4328,12 @@
         badge.textContent = `${secOps.length} ops`;
       }
 
+      // Update inner scroll container label
+      const inner = document.getElementById('sec-piv-inner');
+      if (inner) {
+        inner.title = secOps.length > 10 ? `Showing all ${secOps.length} operators — scroll to see more` : '';
+      }
+
       // ============================================================
       // UPDATED HEADER
       // ============================================================
@@ -3997,7 +4343,7 @@
 
       <th class="rh">#</th>
 
-      <th class="rh">Secondary Operator</th>
+      <th class="rh sortable" onclick="toggleSecPivotSort()" title="Click to sort A→Z / Z→A" style="cursor:pointer">Secondary Operator <span id="sec-piv-sort-indicator">▲</span></th>
 
       <!-- Line Count moved here -->
       <th class="pivot-total-col">Line Count</th>
@@ -4065,7 +4411,7 @@
 
       tbody.innerHTML =
 
-        rowData.slice(0, 10).map(({
+        rowData.map(({
           op,
           idx,
           rowTotals,
@@ -4247,12 +4593,17 @@
       // OPERATORS
       // ============================================================
 
-      let primOps = Object.keys(pivMap).sort();
+      let primOps = Object.keys(pivMap).sort((a,b) => primaryPivotSortDir * a.localeCompare(b));
 
       if (search) {
         primOps = primOps.filter(op =>
           op.toLowerCase().includes(search)
         );
+      }
+
+      // Apply multi-select filter
+      if (primOpSelected && primOpSelected.length > 0) {
+        primOps = primOps.filter(op => primOpSelected.includes(op));
       }
 
       // ============================================================
@@ -4289,6 +4640,12 @@
         badge.textContent = `${primOps.length} ops`;
       }
 
+      // Update inner scroll container label
+      const inner = document.getElementById('primary-piv-inner');
+      if (inner) {
+        inner.title = primOps.length > 10 ? `Showing all ${primOps.length} operators — scroll to see more` : '';
+      }
+
       // ============================================================
       // UPDATED HEADER
       // ============================================================
@@ -4296,7 +4653,7 @@
       thead.innerHTML = `
     <tr>
       <th class="rh">#</th>
-      <th class="rh">Primary Operator</th>
+      <th class="rh sortable" onclick="togglePrimaryPivotSort()" title="Click: A→Z / Z→A" style="cursor:pointer">Primary Operator <span id="primary-piv-sort-ind" style="font-size:9px;color:var(--blue)">${primaryPivotSortDir===1?'▲':'▼'}</span></th>
       <th class="pivot-total-col">Earnings</th>
 
       ${dims.map(d => `
@@ -4356,7 +4713,7 @@
 
       tbody.innerHTML =
 
-        rowData.slice(0, 10).map(({
+        rowData.map(({
           op,
           idx,
           rowTotals,
@@ -4395,8 +4752,7 @@
 
             <strong>
               ₹${earnings.toLocaleString('en-IN', {
-            minimumFractionDigits: 2
-          })}
+            minimumFractionDigits: 2, maximumFractionDigits: 2})}
             </strong>
 
           </td>
@@ -4437,8 +4793,7 @@
 
           <strong>
             ₹${grandEarnings.toLocaleString('en-IN', {
-          minimumFractionDigits: 2
-        })}
+          minimumFractionDigits: 2, maximumFractionDigits: 2})}
           </strong>
 
         </td>
@@ -4487,10 +4842,9 @@
     }
     function renderXCPaged() {
       const data = xcFilt; const tbody = document.getElementById('xc-tbody');
-      if (!data.length) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; document.getElementById('xc-pag').innerHTML = ''; const pi = document.getElementById('xc-pi'); if (pi) pi.textContent = ''; return; }
-      const paged = data.slice((xcPage - 1) * EPS, xcPage * EPS);
-      tbody.innerHTML = paged.map((r, i) => `<tr><td>${(xcPage - 1) * EPS + i + 1}</td><td><code style="font-size:10px;background:var(--bg);padding:1px 4px;border-radius:3px">${esc(r['Upload Id'] || '—')}</code></td><td>${esc(r['Tenant Name'] || '—')}</td><td>${esc(r['Location Name'] || r['Location'] || '—')}</td><td>${esc(r['Vendor Name'] || '—')}</td><td>${esc(r['Process Date'] || '—')}</td><td><span class="badge ${r['Exception Severity'] === 'Critical' ? 'badge-red' : r['Exception Severity'] === 'High' ? 'badge-orange' : 'badge-yellow'}">${esc(r['Exception Severity'] || '—')}</span></td><td>${esc(r['Exception Reason'] || '—')}</td><td class="td-bold">${esc(r['Verification Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Secondary Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Exception Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Product Verification Operator'] || '—')}</td><td><span class="badge badge-orange">${esc(r['Error Type'] || '—')}</span></td></tr>`).join('');
-      pager('xc-pag', 'xc-pi', data.length, xcPage, 'setXcPage', EPS);
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; const pi = document.getElementById('xc-pi'); if (pi) pi.textContent = ''; return; }
+      tbody.innerHTML = data.map((r, i) => `<tr><td>${i + 1}</td><td><code style="font-size:10px;background:var(--bg);padding:1px 4px;border-radius:3px">${esc(r['Upload Id'] || '—')}</code></td><td>${esc(r['Tenant Name'] || '—')}</td><td>${esc(r['Location Name'] || r['Location'] || '—')}</td><td>${esc(r['Vendor Name'] || '—')}</td><td>${esc(r['Process Date'] || '—')}</td><td><span class="badge ${r['Exception Severity'] === 'Critical' ? 'badge-red' : r['Exception Severity'] === 'High' ? 'badge-orange' : 'badge-yellow'}">${esc(r['Exception Severity'] || '—')}</span></td><td>${esc(r['Exception Reason'] || '—')}</td><td class="td-bold">${esc(r['Verification Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Secondary Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Exception Operator'] || '—')}</td><td style="color:var(--muted)">${esc(r['Product Verification Operator'] || '—')}</td><td><span class="badge badge-orange">${esc(r['Error Type'] || '—')}</span></td></tr>`).join('');
+      const pi = document.getElementById('xc-pi'); if (pi) pi.textContent = `${data.length} records`;
     }
 
     // ============================================================
@@ -4520,10 +4874,9 @@
     }
     function renderDashPaged() {
       const sum = dashFilt; const tbody = document.getElementById('dash-tbody');
-      if (!sum.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; document.getElementById('dash-pag').innerHTML = ''; const pi = document.getElementById('dash-pi'); if (pi) pi.textContent = ''; return; }
-      const paged = sum.slice((dashPage - 1) * PS, dashPage * PS);
-      tbody.innerHTML = paged.map(r => { const abE = r['_ab'] || 0; const xcE = DB.xc.filter(x => empMatch(r, x)).length; const earn = r['Total Earnings'] ? '₹' + parseFloat(r['Total Earnings']).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—'; const q = r['Operation Queue'] || '—'; return `<tr><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td><span class="qbadge" title="${esc(q)}">${esc(q)}</span></td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td>${earn}</td><td style="font-size:10px;color:var(--muted)">${esc(r['Time Spent'] || '—')}</td><td>₹${(+r['Average Unit Cost'] || 0).toFixed(2)}</td><td>${abE > 0 ? `<span class="badge badge-red">${abE}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${xcE > 0 ? `<span class="badge badge-orange">${xcE}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Customer Error'] || 0) > 0 ? `<span class="badge badge-yellow">${+r['Customer Error'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Rejected'] || 0) > 0 ? `<span class="badge badge-red">${+r['Rejected'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td></tr>`; }).join('');
-      pager('dash-pag', 'dash-pi', sum.length, dashPage, 'setDashPage');
+      if (!sum.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; const pi = document.getElementById('dash-pi'); if (pi) pi.textContent = ''; return; }
+      tbody.innerHTML = sum.map(r => { const abE = r['_ab'] || 0; const xcE = DB.xc.filter(x => empMatch(r, x)).length; const earn = r['Total Earnings'] ? '₹' + parseFloat(r['Total Earnings']).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—'; const q = r['Operation Queue'] || '—'; return `<tr><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td><span class="qbadge" title="${esc(q)}">${esc(q)}</span></td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td>${earn}</td><td style="font-size:10px;color:var(--muted)">${esc(r['Time Spent'] || '—')}</td><td>₹${parseFloat(r['Average Unit Cost']||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>${abE > 0 ? `<span class="badge badge-red">${abE}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${xcE > 0 ? `<span class="badge badge-orange">${xcE}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Customer Error'] || 0) > 0 ? `<span class="badge badge-yellow">${+r['Customer Error'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Rejected'] || 0) > 0 ? `<span class="badge badge-red">${+r['Rejected'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td></tr>`; }).join('');
+      const pi = document.getElementById('dash-pi'); if (pi) pi.textContent = `${sum.length} records`;
     }
 
     // ============================================================
@@ -4541,16 +4894,15 @@
       dashDWFilt = data; const badge = document.getElementById('dash-dw-badge'); if (badge) badge.textContent = data.length + ' records';
       if (sR.trim()) { buildOpOverview(sR.trim(), 'dash-dw-op-overview'); } else { const ov = document.getElementById('dash-dw-op-overview'); if (ov) { ov.style.display = 'none'; ov.innerHTML = ''; } }
       const gc = data.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const ge = data.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0);
-      const tf = document.getElementById('dash-dw-tfoot'); if (tf && data.length) { const dc = new Set(data.map(r => r['Date'])).size; tf.innerHTML = `<tr class="dw-grand-total-row"><td colspan="4">🏆 Grand Total — ${dc} dates · ${data.length} records</td><td>${gc.toLocaleString()}</td><td>—</td><td>—</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`; } else if (tf) tf.innerHTML = '';
+      const tf = document.getElementById('dash-dw-tfoot'); if (tf && data.length) { const dc = new Set(data.map(r => r['Date'])).size; tf.innerHTML = `<tr class="dw-grand-total-row"><td colspan="4">🏆 Grand Total — ${dc} dates · ${data.length} records</td><td>${gc.toLocaleString()}</td><td>—</td><td>—</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`; } else if (tf) tf.innerHTML = '';
       renderDashDWPaged();
     }
     function renderDashDWPaged() {
       const data = dashDWFilt; const tbody = document.getElementById('dash-dw-tbody');
-      if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>'; document.getElementById('dash-dw-pag').innerHTML = ''; const pi = document.getElementById('dash-dw-pi'); if (pi) pi.textContent = ''; return; }
-      const paged = data.slice((dashDWPage - 1) * PS, dashDWPage * PS);
-      const dg = {}; paged.forEach(r => { const dt = r['Date'] || '—'; if (!dg[dt]) dg[dt] = []; dg[dt].push(r); });
-      let h = ''; Object.keys(dg).sort().reverse().forEach(dt => { const rows = dg[dt]; const dc = rows.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const de = rows.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0); h += `<tr class="dw-date-group-hdr"><td colspan="8" style="padding:5px 9px"><span class="day-tag">${esc(dt)}</span> <span style="font-size:10px;color:var(--blue);font-weight:700;margin-left:7px">${rows.length} records · ${dc.toLocaleString()} · ₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></td></tr>`; rows.forEach(r => { h += `<tr><td><span class="day-tag">${esc(r['Date'] || '—')}</span></td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${esc(r['Location'] || '—')}</td><td>${esc(r['Operation Queue'] || '—')}</td><td><strong>${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td>${esc(r['Time Spent'] || '—')}</td><td>₹${(+r['Average Unit Cost'] || 0).toFixed(2)}</td><td>₹${(+r['Total Earnings'] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`; }); h += `<tr class="dw-subtotal-row"><td colspan="4" style="padding:4px 9px"><strong>📅 ${esc(dt)} Subtotal</strong></td><td><strong>${dc.toLocaleString()}</strong></td><td colspan="2"></td><td>₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`; });
-      tbody.innerHTML = h; pager('dash-dw-pag', 'dash-dw-pi', data.length, dashDWPage, 'setDashDWPage');
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>'; const pi = document.getElementById('dash-dw-pi'); if (pi) pi.textContent = ''; return; }
+      const dg = {}; data.forEach(r => { const dt = r['Date'] || '—'; if (!dg[dt]) dg[dt] = []; dg[dt].push(r); });
+      let h = ''; Object.keys(dg).sort().reverse().forEach(dt => { const rows = dg[dt]; const dc = rows.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const de = rows.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0); h += `<tr class="dw-date-group-hdr"><td colspan="8" style="padding:5px 9px"><span class="day-tag">${esc(dt)}</span> <span style="font-size:10px;color:var(--blue);font-weight:700;margin-left:7px">${rows.length} records · ${dc.toLocaleString()} · ₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></td></tr>`; rows.forEach(r => { h += `<tr><td><span class="day-tag">${esc(r['Date'] || '—')}</span></td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${esc(r['Location'] || '—')}</td><td>${esc(r['Operation Queue'] || '—')}</td><td><strong>${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td>${esc(r['Time Spent'] || '—')}</td><td>₹${parseFloat(r['Average Unit Cost']||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>₹${(+r['Total Earnings'] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`; }); h += `<tr class="dw-subtotal-row"><td colspan="4" style="padding:4px 9px"><strong>📅 ${esc(dt)} Subtotal</strong></td><td><strong>${dc.toLocaleString()}</strong></td><td colspan="2"></td><td>₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`; });
+      tbody.innerHTML = h; const pi = document.getElementById('dash-dw-pi'); if (pi) pi.textContent = `${data.length} records`;
     }
 
     // ============================================================
@@ -4642,8 +4994,7 @@
       </td>
       <td>
         ₹${r.earnings.toLocaleString('en-IN', {
-        minimumFractionDigits: 2
-      })}
+        minimumFractionDigits: 2, maximumFractionDigits: 2})}
       </td>
       <td>${pBar(r.perf, pc(r.perf))}</td>
     </tr>
@@ -4659,8 +5010,7 @@
         <td>${sorted.length} rows</td>
         <td>${gt.toLocaleString()}</td>
         <td>₹${ge.toLocaleString('en-IN', {
-          minimumFractionDigits: 2
-        })}</td>
+          minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
         <td>100%</td>
       </tr>
     `;
@@ -4701,7 +5051,7 @@
       const data = empData; const mx = empMax; const tbody = document.getElementById('emp-tbody');
       if (!data.length) { tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; document.getElementById('emp-pag').innerHTML = ''; const pi = document.getElementById('emp-pi'); if (pi) pi.textContent = ''; return; }
       const paged = data.slice((empPage - 1) * PS, empPage * PS);
-      tbody.innerHTML = paged.map((r, i) => { const abE = DB.abbyy.filter(a => empMatch(r, a)).length; const total = +r['Total Count'] || 0; const pct = Math.round(total / mx * 100); const earn = r['Total Earnings'] ? '₹' + parseFloat(r['Total Earnings']).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '—'; const pc = pct > 70 ? 'var(--green)' : pct > 40 ? 'var(--blue)' : 'var(--yellow)'; const qd = r['_queues'] && r['_queues'].size > 0 ? [...r['_queues']].join(' / ') : (r['Operation Queue'] || '—'); const qs = qd.length > 28 ? qd.substring(0, 26) + '…' : qd; return `<tr><td>${(empPage - 1) * PS + i + 1}</td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td style="font-size:10px;color:var(--muted)">${esc(r['Email Id'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td><span class="qbadge" title="${esc(qd)}">${esc(qs)}</span></td><td>${abE > 0 ? `<span class="badge badge-red">${abE}</span>` : '<span class="badge badge-green">0</span>'}</td><td><strong>${earn}</strong></td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${total.toLocaleString()}</strong></td><td>${(+r['Customer Error'] || 0) > 0 ? `<span class="badge badge-yellow">${+r['Customer Error'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Rejected'] || 0) > 0 ? `<span class="badge badge-red">${+r['Rejected'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${pBar(pct, pc)}</td></tr>`; }).join('');
+      tbody.innerHTML = paged.map((r, i) => { const abE = DB.abbyy.filter(a => empMatch(r, a)).length; const total = +r['Total Count'] || 0; const pct = Math.round(total / mx * 100); const earn = r['Total Earnings'] ? '₹' + parseFloat(r['Total Earnings']).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2}) : '—'; const pc = pct > 70 ? 'var(--green)' : pct > 40 ? 'var(--blue)' : 'var(--yellow)'; const qd = r['_queues'] && r['_queues'].size > 0 ? [...r['_queues']].join(' / ') : (r['Operation Queue'] || '—'); const qs = qd.length > 28 ? qd.substring(0, 26) + '…' : qd; return `<tr><td>${(empPage - 1) * PS + i + 1}</td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td style="font-size:10px;color:var(--muted)">${esc(r['Email Id'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td><span class="qbadge" title="${esc(qd)}">${esc(qs)}</span></td><td>${abE > 0 ? `<span class="badge badge-red">${abE}</span>` : '<span class="badge badge-green">0</span>'}</td><td><strong>${earn}</strong></td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${total.toLocaleString()}</strong></td><td>${(+r['Customer Error'] || 0) > 0 ? `<span class="badge badge-yellow">${+r['Customer Error'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${(+r['Rejected'] || 0) > 0 ? `<span class="badge badge-red">${+r['Rejected'] || 0}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${pBar(pct, pc)}</td></tr>`; }).join('');
       pager('emp-pag', 'emp-pi', data.length, empPage, 'setEmpPage');
     }
 
@@ -4722,7 +5072,7 @@
       dwFilt = data; const badge = document.getElementById('dw-total-badge'); if (badge) badge.textContent = data.length + ' records';
       if (sR.trim()) { buildOpOverview(sR.trim(), 'dw-op-overview'); } else { const ov = document.getElementById('dw-op-overview'); if (ov) { ov.style.display = 'none'; ov.innerHTML = ''; } }
       const gc = data.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const ge = data.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0);
-      const tf = document.getElementById('daywise-tfoot'); if (tf && data.length) { const dc = new Set(data.map(r => r['Date'])).size; const oc = new Set(data.map(r => r['User Name'])).size; tf.innerHTML = `<tr class="dw-grand-total-row"><td colspan="4">🏆 Grand Total — ${dc} date(s) · ${oc} operator(s) · ${data.length} records</td><td>${gc.toLocaleString()}</td><td>—</td><td>—</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`; } else if (tf) tf.innerHTML = '';
+      const tf = document.getElementById('daywise-tfoot'); if (tf && data.length) { const dc = new Set(data.map(r => r['Date'])).size; const oc = new Set(data.map(r => r['User Name'])).size; tf.innerHTML = `<tr class="dw-grand-total-row"><td colspan="4">🏆 Grand Total — ${dc} date(s) · ${oc} operator(s) · ${data.length} records</td><td>${gc.toLocaleString()}</td><td>—</td><td>—</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`; } else if (tf) tf.innerHTML = '';
       renderDWPaged();
     }
     function renderDWPaged() {
@@ -4732,7 +5082,7 @@
       const paged = data.slice((dwPage - 1) * PS, dwPage * PS);
       const dg = {}; paged.forEach(r => { const dt = r['Date'] || '—'; if (!dg[dt]) dg[dt] = []; dg[dt].push(r); });
       const sorted = Object.keys(dg).sort((a, b) => (dwSort.col === 'date' ? dwSort.dir : -1) * a.localeCompare(b));
-      let h = ''; sorted.forEach(dt => { const rows = dg[dt]; const dc = rows.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const de = rows.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0); const oc = new Set(rows.map(r => r['User Name'])).size; h += `<tr class="dw-date-group-hdr"><td colspan="8" style="padding:5px 9px"><span class="day-tag">${esc(dt)}</span><span style="font-size:10px;color:var(--blue);font-weight:700;margin-left:7px">${oc} op(s) · ${rows.length} records · ${dc.toLocaleString()} · ₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></td></tr>`; rows.forEach(r => { h += `<tr><td><span class="day-tag">${esc(r['Date'] || '—')}</span></td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td>${esc(r['Operation Queue'] || '—')}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td style="font-family:'Space Mono',monospace;font-size:10px">${esc(r['Time Spent'] || '—')}</td><td>₹${(+r['Average Unit Cost'] || 0).toFixed(2)}</td><td><strong>₹${(+r['Total Earnings'] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></td></tr>`; }); h += `<tr class="dw-subtotal-row"><td colspan="4" style="padding:4px 9px"><strong>📅 ${esc(dt)} Subtotal — ${oc} op(s)</strong></td><td><strong>${dc.toLocaleString()}</strong></td><td colspan="2"></td><td>₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td></tr>`; });
+      let h = ''; sorted.forEach(dt => { const rows = dg[dt]; const dc = rows.reduce((a, r) => a + (+r['Total Count'] || 0), 0); const de = rows.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0); const oc = new Set(rows.map(r => r['User Name'])).size; h += `<tr class="dw-date-group-hdr"><td colspan="8" style="padding:5px 9px"><span class="day-tag">${esc(dt)}</span><span style="font-size:10px;color:var(--blue);font-weight:700;margin-left:7px">${oc} op(s) · ${rows.length} records · ${dc.toLocaleString()} · ₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</span></td></tr>`; rows.forEach(r => { h += `<tr><td><span class="day-tag">${esc(r['Date'] || '—')}</span></td><td class="td-bold">${esc(r['User Name'] || '—')}</td><td>${cBadge(r['Location'] || '')}</td><td>${esc(r['Operation Queue'] || '—')}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--blue)">${(+r['Total Count'] || 0).toLocaleString()}</strong></td><td style="font-family:'Space Mono',monospace;font-size:10px">${esc(r['Time Spent'] || '—')}</td><td>₹${parseFloat(r['Average Unit Cost']||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td><strong>₹${(+r['Total Earnings'] || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></td></tr>`; }); h += `<tr class="dw-subtotal-row"><td colspan="4" style="padding:4px 9px"><strong>📅 ${esc(dt)} Subtotal — ${oc} op(s)</strong></td><td><strong>${dc.toLocaleString()}</strong></td><td colspan="2"></td><td>₹${de.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td></tr>`; });
       tbody.innerHTML = h; pager('dw-pag', 'dw-pi', data.length, dwPage, 'setDwPage');
     }
 
@@ -4744,7 +5094,7 @@
     function sortCWFlat(col, el) { if (cwFlatSort2.col === col) cwFlatSort2.dir *= -1; else { cwFlatSort2.col = col; cwFlatSort2.dir = -1; } document.querySelectorAll('#cw-flat-table th').forEach(t => t.classList.remove('sort-asc', 'sort-desc')); if (el) el.classList.add(cwFlatSort2.dir === -1 ? 'sort-desc' : 'sort-asc'); renderCWFlatTable(cwFlatData2); }
     function getCWSrc() { const fr = document.getElementById('cw-from')?.value || ''; const to = document.getElementById('cw-to')?.value || ''; const mth = document.getElementById('cw-month')?.value || ''; const isDW = DB.daywise.length > 0; let data = isDW ? [...DB.daywise] : [...DB.summary]; if (fr) data = data.filter(r => (r['Date'] || '') >= fr); if (to) data = data.filter(r => (r['Date'] || '') <= to); if (mth) { const mi = MONTHS.indexOf(mth) + 1; data = data.filter(r => { const d = new Date(r['Date'] || ''); return !isNaN(d) && d.getMonth() + 1 === mi; }); } return { data, isDW }; }
     function renderCW() { const { data } = getCWSrc(); const search = (document.getElementById('cw-search')?.value || '').toLowerCase(); const cf = document.getElementById('cw-cf')?.value || ''; const g = {}; data.forEach(r => { const c = r['Location'] || '—'; const q = r['Operation Queue'] || 'General'; const k = `${c}|||${q}`; if (!g[k]) g[k] = { center: c, queue: q, count: 0, earnings: 0 }; g[k].count += (+r['Total Count'] || 0); g[k].earnings += (+r['Total Earnings'] || 0); }); let rows = Object.values(g); if (search) rows = rows.filter(r => r.center.toLowerCase().includes(search) || r.queue.toLowerCase().includes(search)); if (cf) rows = rows.filter(r => r.center === cf); cwFlatData2 = rows; const badge = document.getElementById('cw-flat-badge'); if (badge) badge.textContent = rows.length + ' rows'; renderCWFlatTable(rows); renderCWPivot(data); }
-    function renderCWFlatTable(rows) { const gt = rows.reduce((a, r) => a + r.count, 0); const rp = rows.map(r => ({ ...r, perf: gt > 0 ? (r.count / gt * 100) : 0 })); const sorted = [...rp].sort((a, b) => { let av, bv; if (cwFlatSort2.col === 'center') { av = a.center; bv = b.center; } else if (cwFlatSort2.col === 'queue') { av = a.queue; bv = b.queue; } else if (cwFlatSort2.col === 'earnings') return cwFlatSort2.dir * (a.earnings - b.earnings); else if (cwFlatSort2.col === 'perf') return cwFlatSort2.dir * (a.perf - b.perf); else return cwFlatSort2.dir * (a.count - b.count); if (typeof av === 'string') return cwFlatSort2.dir * av.localeCompare(bv); return 0; }); const tbody = document.getElementById('cw-flat-tbody'); const tfoot = document.getElementById('cw-flat-tfoot'); if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; if (tfoot) tfoot.innerHTML = ''; return; } const pc = p => p >= 20 ? 'var(--green)' : p >= 10 ? 'var(--blue)' : p >= 5 ? 'var(--yellow)' : 'var(--orange)'; tbody.innerHTML = sorted.map(r => `<tr><td>${cBadge(r.center)}</td><td>${esc(r.queue)}</td><td><strong style="font-family:'Space Mono',monospace">${r.count.toLocaleString()}</strong></td><td>₹${r.earnings.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>${pBar(r.perf, pc(r.perf))}</td></tr>`).join(''); if (tfoot) { const ge = sorted.reduce((a, r) => a + r.earnings, 0); tfoot.innerHTML = `<tr class="grand-total-row"><td>🏆 Grand Total</td><td>${sorted.length} rows</td><td>${gt.toLocaleString()}</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td><td>100%</td></tr>`; } }
+    function renderCWFlatTable(rows) { const gt = rows.reduce((a, r) => a + r.count, 0); const rp = rows.map(r => ({ ...r, perf: gt > 0 ? (r.count / gt * 100) : 0 })); const sorted = [...rp].sort((a, b) => { let av, bv; if (cwFlatSort2.col === 'center') { av = a.center; bv = b.center; } else if (cwFlatSort2.col === 'queue') { av = a.queue; bv = b.queue; } else if (cwFlatSort2.col === 'earnings') return cwFlatSort2.dir * (a.earnings - b.earnings); else if (cwFlatSort2.col === 'perf') return cwFlatSort2.dir * (a.perf - b.perf); else return cwFlatSort2.dir * (a.count - b.count); if (typeof av === 'string') return cwFlatSort2.dir * av.localeCompare(bv); return 0; }); const tbody = document.getElementById('cw-flat-tbody'); const tfoot = document.getElementById('cw-flat-tfoot'); if (!sorted.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:18px">No data</td></tr>'; if (tfoot) tfoot.innerHTML = ''; return; } const pc = p => p >= 20 ? 'var(--green)' : p >= 10 ? 'var(--blue)' : p >= 5 ? 'var(--yellow)' : 'var(--orange)'; tbody.innerHTML = sorted.map(r => `<tr><td>${cBadge(r.center)}</td><td>${esc(r.queue)}</td><td><strong style="font-family:'Space Mono',monospace">${r.count.toLocaleString()}</strong></td><td>₹${r.earnings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td>${pBar(r.perf, pc(r.perf))}</td></tr>`).join(''); if (tfoot) { const ge = sorted.reduce((a, r) => a + r.earnings, 0); tfoot.innerHTML = `<tr class="grand-total-row"><td>🏆 Grand Total</td><td>${sorted.length} rows</td><td>${gt.toLocaleString()}</td><td>₹${ge.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2})}</td><td>100%</td></tr>`; } }
     function renderCWPivot(data) { const cf = document.getElementById('cw-cf')?.value || ''; const cens = cf ? [cf] : ALL_CENTERS; const qs = [...new Set(data.map(r => r['Operation Queue'] || 'General').filter(Boolean))].sort(); if (!qs.length) { document.getElementById('cw-pivot-thead').innerHTML = '<tr><th>No data</th></tr>'; document.getElementById('cw-pivot-tbody').innerHTML = ''; return; } const pivot = {}; const ct = {}; const rt = {}; let grand = 0; qs.forEach(q => ct[q] = 0); cens.forEach(c => { pivot[c] = {}; qs.forEach(q => pivot[c][q] = 0); rt[c] = 0; }); data.forEach(r => { const c = r['Location'] || ''; const q = r['Operation Queue'] || 'General'; const n = +r['Total Count'] || 0; if (pivot[c] !== undefined && qs.includes(q)) { pivot[c][q] = (pivot[c][q] || 0) + n; rt[c] = (rt[c] || 0) + n; ct[q] = (ct[q] || 0) + n; grand += n; } }); document.getElementById('cw-pivot-thead').innerHTML = `<tr><th class="rh">Center</th>${qs.map(q => `<th>${esc(q)}</th>`).join('')}<th class="pivot-total-col">Total</th><th class="pivot-total-col">Perf%</th></tr>`; document.getElementById('cw-pivot-tbody').innerHTML = cens.map(c => { const cfg = CC[c] || { e: '🏢', c: 'var(--text)', l: 'var(--bg)' }; const cells = qs.map(q => `<td style="font-family:'Space Mono',monospace;text-align:right">${pivot[c]?.[q] ? pivot[c][q].toLocaleString() : '—'}</td>`).join(''); const total = rt[c] || 0; const p = grand > 0 ? (total / grand * 100) : 0; return `<tr><td class="rh"><span style="background:${cfg.l};color:${cfg.c};padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700">${cfg.e} ${c}</span></td>${cells}<td class="pivot-total-col" style="font-family:'Space Mono',monospace;text-align:right">${total.toLocaleString()}</td><td class="pivot-total-col">${pBar(p, cfg.c)}</td></tr>`; }).join('') + `<tr class="pivot-total-row"><td class="rh"><strong>🏆 Total</strong></td>${qs.map(q => `<td style="font-family:'Space Mono',monospace;text-align:right">${(ct[q] || 0).toLocaleString()}</td>`).join('')}<td class="pivot-total-col" style="font-family:'Space Mono',monospace;text-align:right">${grand.toLocaleString()}</td><td class="pivot-total-col">100%</td></tr>`; }
 
     // ============================================================
@@ -4818,7 +5168,7 @@
           const now = new Date().toLocaleString('en-IN'); if (!DB.uploadLog) DB.uploadLog = []; DB.uploadLog.unshift({ time: now, type, file: file.name, count: data.length, status: 'Success' }); DB.uploadLog = DB.uploadLog.slice(0, 50);
           if (!DB.gsync) DB.gsync = {}; DB.gsync.lastSync = now; saveDB(); logUpload();
           st.textContent = `✅ ${data.length} records`; st.style.color = 'var(--green)'; showToast(`✅ ${data.length} ${type} records uploaded!`);
-          updateLastUpdate(); renderAll(); renderDW(); renderEmployees(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown();
+          updateLastUpdate(); renderAll(); renderDW(); renderEmployees(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); if(typeof populateAdvFilterDropdowns==='function') populateAdvFilterDropdowns();
         } catch (err) { st.textContent = '❌ ' + err.message; st.style.color = 'var(--red)'; if (!DB.uploadLog) DB.uploadLog = []; DB.uploadLog.unshift({ time: new Date().toLocaleString('en-IN'), type, file: file.name, count: 0, status: 'Failed' }); DB.uploadLog = DB.uploadLog.slice(0, 50); logUpload(); }
       };
       if (file.name.endsWith('.csv')) reader.readAsText(file); else reader.readAsArrayBuffer(file);
@@ -4860,7 +5210,7 @@
     function confirmClear() { showModal('Clear All Data', 'Permanently delete all records?', () => { DB.summary = []; DB.abbyy = []; DB.xc = []; DB.daywise = []; DB.uploadLog = []; if (DB.gsync) delete DB.gsync.lastSync; saveDB(); renderAll(); renderEmployees(); updateLastUpdate(); showToast('🗑️ Cleared'); }); }
     function toggleDark(on) { document.documentElement.setAttribute('data-theme', on ? 'dark' : ''); DB.settings.dark = on; saveDB();['night-toggle', 'dark-mode-settings'].forEach(id => { const el = document.getElementById(id); if (el) el.checked = on; }); document.getElementById('night-btn').classList.toggle('active', on); setTimeout(renderCharts, 100); }
     function toggleNight() { toggleDark(document.documentElement.getAttribute('data-theme') !== 'dark'); }
-    function loadSettings() { if (DB.settings.dark) toggleDark(true); if (DB.settings.sidebarCollapsed) { document.body.classList.add('sidebar-collapsed'); const btn = document.getElementById('sidebar-toggle-btn'); if (btn) btn.textContent = '▶'; } }
+    function loadSettings() { if (DB.settings.dark) toggleDark(true); }
     function triggerSync() { const icon = document.getElementById('sync-icon'); icon.classList.add('spin'); setTimeout(() => { icon.classList.remove('spin'); renderAll(); renderDW(); renderEmployees(); updateLastUpdate(); showToast('✅ Refreshed!'); }, 700); }
     function updateBadges() { document.getElementById('abbyy-badge').textContent = DB.abbyy.length; document.getElementById('xc-badge').textContent = DB.xc.length; }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
@@ -4887,13 +5237,345 @@
     // ============================================================
     function toggleSidebarCollapse() {
       const collapsed = document.body.classList.toggle('sidebar-collapsed');
-      const btn = document.getElementById('sidebar-toggle-btn');
-      if (btn) btn.textContent = collapsed ? '▶' : '◀';
+      const sidebar = document.getElementById('sidebar');
+      const handle = document.getElementById('sidebar-resize-handle');
+      if (collapsed) {
+        sidebar.style.width = '48px';
+        document.querySelector('.main').style.marginLeft = '48px';
+        if (handle) handle.style.left = '45px';
+      } else {
+        const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w')) || 265;
+        sidebar.style.width = w + 'px';
+        document.querySelector('.main').style.marginLeft = w + 'px';
+        if (handle) handle.style.left = (w - 3) + 'px';
+      }
       DB.settings.sidebarCollapsed = collapsed;
       saveDB();
     }
 
     // For global functions that need to be called from HTML
+
+    // ============================================================
+    // RESIZABLE SIDEBAR (drag handle like Windows)
+    // ============================================================
+    (function() {
+      const MIN_W = 48, MAX_W = 500, ICON_ONLY = 64;
+      let dragging = false, startX = 0, startW = 0;
+      
+      function getSidebarW() {
+        const s = document.getElementById('sidebar');
+        return s ? s.offsetWidth : 265;
+      }
+      function applySidebarW(w) {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.querySelector('.main');
+        const handle = document.getElementById('sidebar-resize-handle');
+        if (!sidebar || !main) return;
+        sidebar.style.width = w + 'px';
+        main.style.marginLeft = w + 'px';
+        if (handle) handle.style.left = (w - 3) + 'px';
+        // Collapsed mode when below icon threshold
+        if (w <= ICON_ONLY) {
+          document.body.classList.add('sidebar-collapsed');
+        } else {
+          document.body.classList.remove('sidebar-collapsed');
+        }
+        document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+      }
+      
+      window.addEventListener('DOMContentLoaded', function() {
+        const handle = document.getElementById('sidebar-resize-handle');
+        const sidebar = document.getElementById('sidebar');
+        if (!handle || !sidebar) return;
+        
+        // Init handle position
+        const initW = sidebar.offsetWidth || 265;
+        handle.style.left = (initW - 3) + 'px';
+        
+        handle.addEventListener('mousedown', function(e) {
+          dragging = true;
+          startX = e.clientX;
+          startW = getSidebarW();
+          handle.classList.add('dragging');
+          document.body.style.cursor = 'col-resize';
+          document.body.style.userSelect = 'none';
+          e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+          if (!dragging) return;
+          const dx = e.clientX - startX;
+          const newW = Math.max(MIN_W, Math.min(MAX_W, startW + dx));
+          applySidebarW(newW);
+        });
+        
+        document.addEventListener('mouseup', function() {
+          if (!dragging) return;
+          dragging = false;
+          handle.classList.remove('dragging');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          // Save width
+          if (typeof DB !== 'undefined') {
+            DB.settings.sidebarWidth = getSidebarW();
+            DB.settings.sidebarCollapsed = getSidebarW() <= ICON_ONLY;
+            if (typeof saveDB === 'function') saveDB();
+          }
+        });
+        
+        // Touch support
+        handle.addEventListener('touchstart', function(e) {
+          dragging = true; startX = e.touches[0].clientX; startW = getSidebarW();
+          handle.classList.add('dragging'); e.preventDefault();
+        }, { passive: false });
+        document.addEventListener('touchmove', function(e) {
+          if (!dragging) return;
+          const dx = e.touches[0].clientX - startX;
+          const newW = Math.max(MIN_W, Math.min(MAX_W, startW + dx));
+          applySidebarW(newW); e.preventDefault();
+        }, { passive: false });
+        document.addEventListener('touchend', function() {
+          if (!dragging) return; dragging = false; handle.classList.remove('dragging');
+          if (typeof DB !== 'undefined') { DB.settings.sidebarWidth = getSidebarW(); DB.settings.sidebarCollapsed = getSidebarW() <= ICON_ONLY; if (typeof saveDB === 'function') saveDB(); }
+        });
+        
+        // Restore saved width
+        setTimeout(function() {
+          if (typeof DB !== 'undefined' && DB.settings && DB.settings.sidebarWidth) {
+            applySidebarW(DB.settings.sidebarWidth);
+          }
+        }, 100);
+      });
+    })();
+
+
+    // ============================================================
+    // PIVOT TABLE MULTI-SELECT FILTERS
+    // ============================================================
+    let primOpSelected = []; // selected Primary Operators for pivot filter
+    let secOpSelected = [];  // selected Secondary Operators for pivot filter
+
+    function populatePrimOpMSList() {
+      const ops = [...new Set(DB.abbyy.map(r => r['Primary Operator']).filter(Boolean))].sort();
+      const list = document.getElementById('prim-op-ms-list');
+      if (!list) return;
+      list.innerHTML = ops.map(op => {
+        const safeId = 'primop_' + op.replace(/[^a-z0-9]/gi,'_');
+        const checked = primOpSelected.includes(op) ? 'checked' : '';
+        return `<div class="piv-ms-opt"><input type="checkbox" id="${safeId}" value="${esc(op)}" ${checked} onchange="updatePrimOpCount()"><label for="${safeId}">${esc(op)}</label></div>`;
+      }).join('');
+    }
+
+    function populateSecOpMSList() {
+      const ops = [...new Set(DB.abbyy.map(r => r['Secondary Operator']).filter(Boolean))].sort();
+      const list = document.getElementById('sec-op-ms-list');
+      if (!list) return;
+      list.innerHTML = ops.map(op => {
+        const safeId = 'secop_' + op.replace(/[^a-z0-9]/gi,'_');
+        const checked = secOpSelected.includes(op) ? 'checked' : '';
+        return `<div class="piv-ms-opt"><input type="checkbox" id="${safeId}" value="${esc(op)}" ${checked} onchange="updateSecOpCount()"><label for="${safeId}">${esc(op)}</label></div>`;
+      }).join('');
+    }
+
+    function updatePrimOpCount() {
+      const list = document.getElementById('prim-op-ms-list');
+      const countEl = document.getElementById('prim-op-ms-count');
+      const btn = document.getElementById('prim-op-ms-btn');
+      if (!list) return;
+      const checked = [...list.querySelectorAll('input:checked')].map(cb => cb.value);
+      primOpSelected = checked;
+      if (countEl) { countEl.textContent = checked.length; countEl.style.display = checked.length > 0 ? 'inline-block' : 'none'; }
+      if (btn) btn.classList.toggle('has-filter', checked.length > 0);
+    }
+
+    function updateSecOpCount() {
+      const list = document.getElementById('sec-op-ms-list');
+      const countEl = document.getElementById('sec-op-ms-count');
+      const btn = document.getElementById('sec-op-ms-btn');
+      if (!list) return;
+      const checked = [...list.querySelectorAll('input:checked')].map(cb => cb.value);
+      secOpSelected = checked;
+      if (countEl) { countEl.textContent = checked.length; countEl.style.display = checked.length > 0 ? 'inline-block' : 'none'; }
+      if (btn) btn.classList.toggle('has-filter', checked.length > 0);
+    }
+
+    function togglePivMSDrop(id, e) {
+      if (e) e.stopPropagation();
+      const drop = document.getElementById(id);
+      if (!drop) return;
+      const isOpen = drop.classList.contains('open');
+      document.querySelectorAll('.piv-ms-drop').forEach(d => d.classList.remove('open'));
+      if (!isOpen) drop.classList.add('open');
+    }
+
+    function closePivMSDrop(id) {
+      const drop = document.getElementById(id);
+      if (drop) drop.classList.remove('open');
+    }
+
+    function filterPivMSOpts(listId, search) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      const q = search.toLowerCase();
+      list.querySelectorAll('.piv-ms-opt').forEach(opt => {
+        const label = opt.querySelector('label')?.textContent.toLowerCase() || '';
+        opt.style.display = (!q || label.includes(q)) ? '' : 'none';
+      });
+    }
+
+    function clearPivMSSel(listId, countId, btnId) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+      if (listId === 'prim-op-ms-list') primOpSelected = [];
+      if (listId === 'sec-op-ms-list') secOpSelected = [];
+      const countEl = document.getElementById(countId);
+      const btn = document.getElementById(btnId);
+      if (countEl) { countEl.textContent = '0'; countEl.style.display = 'none'; }
+      if (btn) btn.classList.remove('has-filter');
+    }
+
+    // Close piv dropdowns on outside click
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.piv-ms-wrap')) {
+        document.querySelectorAll('.piv-ms-drop').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    // ============================================================
+    // ADVANCED MULTI-SELECT FILTER (Google Docs / Excel style)
+    // ============================================================
+    let advFilters = { operators: [], centers: [], queues: [], from: '', to: '' };
+
+    function populateAdvFilterDropdowns() {
+      const ops = [...new Set(DB.abbyy.map(r => r['Primary Operator']).filter(Boolean))].sort();
+      const qs = [...new Set(DB.abbyy.map(r => r['Operation Queue'] || r['Error Type']).filter(Boolean))].sort();
+      
+      const opList = document.getElementById('adv-op-list');
+      if (opList) {
+        opList.innerHTML = ops.map(op => `<div class="adv-opt"><input type="checkbox" id="advo-${op.replace(/[^a-z0-9]/gi,'_')}" value="${op}" onchange="updateAdvCount('adv-op-list','adv-op-count','adv-op-btn')"><label for="advo-${op.replace(/[^a-z0-9]/gi,'_')}">${esc(op)}</label></div>`).join('');
+      }
+      const qList = document.getElementById('adv-q-list');
+      if (qList) {
+        qList.innerHTML = qs.map(q => `<div class="adv-opt"><input type="checkbox" id="advq-${q.replace(/[^a-z0-9]/gi,'_')}" value="${q}" onchange="updateAdvCount('adv-q-list','adv-q-count','adv-q-btn')"><label for="advq-${q.replace(/[^a-z0-9]/gi,'_')}">${esc(q)}</label></div>`).join('');
+      }
+      // Also populate pivot multi-select lists
+      populatePrimOpMSList();
+      populateSecOpMSList();
+    }
+
+    function toggleAdvDropdown(id, e) {
+      e && e.stopPropagation();
+      const drop = document.getElementById(id);
+      if (!drop) return;
+      const isOpen = drop.classList.contains('open');
+      // Close all dropdowns
+      document.querySelectorAll('.adv-dropdown').forEach(d => d.classList.remove('open'));
+      if (!isOpen) drop.classList.add('open');
+    }
+
+    function closeAdvDropdown(id) {
+      const drop = document.getElementById(id);
+      if (drop) drop.classList.remove('open');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.adv-filter-btn') && !e.target.closest('.adv-dropdown')) {
+        document.querySelectorAll('.adv-dropdown').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    function updateAdvCount(listId, countId, btnId) {
+      const list = document.getElementById(listId);
+      const countEl = document.getElementById(countId);
+      const btn = document.getElementById(btnId);
+      if (!list || !countEl) return;
+      const checked = list.querySelectorAll('input[type=checkbox]:checked').length;
+      countEl.textContent = checked;
+      countEl.style.display = checked > 0 ? 'inline-block' : 'none';
+      if (btn) btn.classList.toggle('has-filter', checked > 0);
+    }
+
+    function updateAdvDateCount() {
+      const from = document.getElementById('adv-from')?.value;
+      const to = document.getElementById('adv-to')?.value;
+      const hasDate = !!(from || to);
+      const countEl = document.getElementById('adv-date-count');
+      const btn = document.getElementById('adv-date-btn');
+      if (countEl) { countEl.style.display = hasDate ? 'inline-block' : 'none'; }
+      if (btn) btn.classList.toggle('has-filter', hasDate);
+    }
+
+    function filterAdvOpts(listId, search) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      const q = search.toLowerCase();
+      list.querySelectorAll('.adv-opt').forEach(opt => {
+        const label = opt.querySelector('label')?.textContent.toLowerCase() || '';
+        opt.style.display = (!q || label.includes(q)) ? '' : 'none';
+      });
+    }
+
+    function selectAllAdvOpts(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+      // Update count
+      const map = { 'adv-op-list': ['adv-op-count','adv-op-btn'], 'adv-q-list': ['adv-q-count','adv-q-btn'], 'adv-ctr-list': ['adv-ctr-count','adv-ctr-btn'] };
+      const [ci, bi] = map[listId] || [];
+      if (ci && bi) updateAdvCount(listId, ci, bi);
+    }
+
+    function clearAdvSel(listId, countId, btnId) {
+      const list = document.getElementById(listId);
+      if (!list) return;
+      list.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+      updateAdvCount(listId, countId, btnId);
+    }
+
+    function getAdvSelected(listId) {
+      const list = document.getElementById(listId);
+      if (!list) return [];
+      return [...list.querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
+    }
+
+    function applyAdvFilters() {
+      advFilters.operators = getAdvSelected('adv-op-list');
+      advFilters.centers = getAdvSelected('adv-ctr-list');
+      advFilters.queues = getAdvSelected('adv-q-list');
+      advFilters.from = document.getElementById('adv-from')?.value || '';
+      advFilters.to = document.getElementById('adv-to')?.value || '';
+      abbyyPage = 1;
+      filterAbbyy();
+      const total = (advFilters.operators.length + advFilters.centers.length + advFilters.queues.length + (advFilters.from || advFilters.to ? 1 : 0));
+      const status = document.getElementById('adv-filter-status');
+      if (status) status.textContent = total > 0 ? `${total} filter${total>1?'s':''} active` : '';
+    }
+
+    function clearAllAdvFilters() {
+      clearAdvSel('adv-op-list','adv-op-count','adv-op-btn');
+      clearAdvSel('adv-ctr-list','adv-ctr-count','adv-ctr-btn');
+      clearAdvSel('adv-q-list','adv-q-count','adv-q-btn');
+      const from = document.getElementById('adv-from'), to = document.getElementById('adv-to');
+      if (from) from.value = ''; if (to) to.value = '';
+      updateAdvDateCount();
+      advFilters = { operators: [], centers: [], queues: [], from: '', to: '' };
+      const status = document.getElementById('adv-filter-status');
+      if (status) status.textContent = '';
+      // Also clear existing abbyy filters
+      const abbyySearch = document.getElementById('abbyy-search');
+      if (abbyySearch) abbyySearch.value = '';
+      document.getElementById('abbyy-from') && (document.getElementById('abbyy-from').value = '');
+      document.getElementById('abbyy-to') && (document.getElementById('abbyy-to').value = '');
+      document.getElementById('abbyy-cf') && (document.getElementById('abbyy-cf').value = '');
+      abbyyPage = 1;
+      filterAbbyy();
+    }
+
+    // Patch filterAbbyy to apply advFilters too
+    const _origFilterAbbyy = typeof filterAbbyy !== 'undefined' ? filterAbbyy : null;
+
     window.setPivotLoc = setPivotLoc;
     window.setPivotReason = setPivotReason;
     window.setAbbyyPivotBy = setAbbyyPivotBy;
