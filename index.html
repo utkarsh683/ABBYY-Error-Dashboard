@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -2518,9 +2520,20 @@
               </div>
             </div>
             <div class="metric-card">
-              <div class="mc-label">Avg Unit Cost</div>
-              <div class="mc-value mc-green" id="m-cost">₹0</div>
-              <div class="mc-sub">Per processed unit</div>
+              <div class="mc-label">Customer Error</div>
+              <div class="mc-value mc-orange" id="m-custerr">0</div>
+              <div class="mc-sub">Total customer errors</div>
+              <div class="mc-bar">
+                <div class="mc-bar-fill" id="mb-custerr" style="background:var(--orange);width:0%"></div>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Rejected</div>
+              <div class="mc-value mc-red" id="m-rejected">0</div>
+              <div class="mc-sub">Total rejected</div>
+              <div class="mc-bar">
+                <div class="mc-bar-fill" id="mb-rejected" style="background:var(--red);width:0%"></div>
+              </div>
             </div>
             <div class="metric-card">
               <div class="mc-label">Error Rate</div>
@@ -2777,47 +2790,76 @@
             </div>
           </div>
 
-          <!-- Center + Queue Performance on Dashboard -->
+          <!-- Center + Queue Performance on Dashboard (Flat + Pivot toggle) -->
           <div class="table-card">
             <div class="table-header">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                 <div style="font-size:13px;font-weight:700">🏢 Center + Queue Performance</div>
                 <span class="cnt-badge" id="dash-cw-badge">0</span>
+                <!-- Flat / Pivot toggle -->
+                <div class="view-toggle">
+                  <button class="vt-btn active" id="dash-cw-tab-flat" onclick="switchDashCW('flat')">📋 Flat</button>
+                  <button class="vt-btn" id="dash-cw-tab-pivot" onclick="switchDashCW('pivot')">🔀 Pivot</button>
+                </div>
               </div>
               <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-                <span style="font-size:10px;font-weight:700;color:var(--muted)">📍</span>
-                <select class="filter-input" id="dash-cw-center-filter" onchange="filterDashCW()" style="max-width:130px">
-                  <option value="">🌐 All Centers</option>
-                  <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
-                  <option>Vadodara-WFH</option><option>Mangalore</option><option>Chennai</option>
-                </select>
-                <input type="text" class="filter-input" id="dash-cw-queue-search" placeholder="🔍 Search queue..."
-                  oninput="filterDashCW()" style="width:150px">
-                <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">✕ Clear</button>
-                <button class="print-btn" onclick="printSection('dash-cw-table','Center + Queue Performance')">🖨️ Print</button>
-                <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-table','CQ_Performance')">📥</button>
+                <!-- Flat-only controls -->
+                <span id="dash-cw-flat-controls" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <select class="filter-input" id="dash-cw-center-filter" onchange="filterDashCW()" style="max-width:130px">
+                    <option value="">🌐 All Centers</option>
+                    <option>Ahmedabad</option><option>Karjan</option><option>Vadodara</option>
+                    <option>Vadodara-WFH</option><option>Mangalore</option><option>Chennai</option>
+                  </select>
+                  <input type="text" class="filter-input" id="dash-cw-queue-search" placeholder="🔍 Search queue..."
+                    oninput="filterDashCW()" style="width:140px">
+                  <button class="btn btn-outline btn-sm" onclick="clearDashCWFilters()">✕ Clear</button>
+                  <button class="print-btn" onclick="printSection('dash-cw-table','Center + Queue Performance')">🖨️</button>
+                  <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-table','CQ_Performance')">📥</button>
+                </span>
+                <!-- Pivot-only controls -->
+                <span id="dash-cw-pivot-controls" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
+                  <span class="cnt-badge" id="dash-cw-pivot-badge" style="background:var(--purple-light);color:var(--purple);border-color:var(--purple)">0</span>
+                  <button class="print-btn" onclick="printSection('dash-cw-pivot-table','Center Queue Pivot')">🖨️</button>
+                  <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dash-cw-pivot-table','CQ_Pivot')">📥 Export</button>
+                </span>
               </div>
             </div>
-            <div class="scroll-wrap">
-              <div class="table-wrap scroll-y">
-                <table id="dash-cw-table">
-                  <thead>
-                    <tr>
-                      <th class="sortable" onclick="sortDashCW('center',this)" title="Click to sort A→Z / Z→A">Center</th>
-                      <th class="sortable" onclick="sortDashCW('queue',this)" title="Click to sort A→Z / Z→A">Queue</th>
-                      <th class="sortable sort-desc" onclick="sortDashCW('count',this)">Line Count</th>
-                      <th>Earnings</th>
-                      <th>Performance</th>
-                    </tr>
-                  </thead>
-                  <tbody id="dash-cw-tbody"></tbody>
-                  <tfoot id="dash-cw-tfoot"></tfoot>
-                </table>
+
+            <!-- FLAT VIEW -->
+            <div id="dash-cw-flat-view">
+              <div class="scroll-wrap">
+                <div class="table-wrap scroll-y">
+                  <table id="dash-cw-table">
+                    <thead>
+                      <tr>
+                        <th class="sortable" onclick="sortDashCW('center',this)">Center</th>
+                        <th class="sortable" onclick="sortDashCW('queue',this)">Queue</th>
+                        <th class="sortable sort-desc" onclick="sortDashCW('count',this)">Line Count</th>
+                        <th>Earnings</th>
+                        <th>Performance</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dash-cw-tbody"></tbody>
+                    <tfoot id="dash-cw-tfoot"></tfoot>
+                  </table>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:6px">
+                <div id="dash-cw-pi" style="font-size:11px;color:var(--muted)"></div>
+                <div id="dash-cw-pag"></div>
               </div>
             </div>
-            <div style="display:flex;align-items:center;padding:7px 0 0;">
-              <div id="dash-cw-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div id="dash-cw-pag" style="display:none"></div>
+
+            <!-- PIVOT VIEW -->
+            <div id="dash-cw-pivot-view" style="display:none">
+              <div class="scroll-wrap">
+                <div class="table-wrap">
+                  <table id="dash-cw-pivot-table" class="pivot-tbl">
+                    <thead id="dash-cw-pivot-thead"></thead>
+                    <tbody id="dash-cw-pivot-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -3055,7 +3097,7 @@
               <!-- Primary Operator Multi-Select Filter -->
               <div class="piv-ms-wrap" id="prim-op-ms-wrap">
                 <button class="piv-ms-btn" id="prim-op-ms-btn" onclick="togglePivMSDrop('prim-op-ms-drop',event)">
-                  👤 Filter Operator
+                  <span class="piv-ms-label">👤 Filter Operator</span>
                   <span class="piv-ms-count" id="prim-op-ms-count" style="display:none">0</span>
                   <span style="font-size:9px;color:var(--muted)">▾</span>
                 </button>
@@ -3122,7 +3164,7 @@
               <!-- Secondary Operator Multi-Select Filter -->
               <div class="piv-ms-wrap" id="sec-op-ms-wrap">
                 <button class="piv-ms-btn" id="sec-op-ms-btn" onclick="togglePivMSDrop('sec-op-ms-drop',event)">
-                  👥 Filter Sec Op
+                  <span class="piv-ms-label">👥 Filter Sec Op</span>
                   <span class="piv-ms-count" id="sec-op-ms-count" style="display:none">0</span>
                   <span style="font-size:9px;color:var(--muted)">▾</span>
                 </button>
@@ -3415,9 +3457,9 @@
               </div>
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
-            <div style="display:flex;align-items:center;padding:7px 0 0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
               <div id="dw-pi" style="font-size:11px;color:var(--muted)"></div>
-              <div id="dw-pag" style="display:none"></div>
+              <div id="dw-pag"></div>
             </div>
           </div>
         </div>
@@ -3969,10 +4011,16 @@
       const total = filtered.reduce((a, r) => a + (+r['Total Count'] || 0), 0);
       const sum = getFiltered('summary');
       const ops = new Set([...sum.map(r => r['User Name']), ...(DB.daywise.length > 0 ? DB.daywise : sum).map(r => r['User Name'])].filter(Boolean)).size;
-      const avgCost = sum.length ? sum.reduce((a, r) => a + (+r['Average Unit Cost'] || 0), 0) / sum.length : 0;
       const rate = total > 0 ? ((ab.length + xc.length) / total * 100) : 0;
-      document.getElementById('m-total').textContent = total.toLocaleString(); document.getElementById('m-abbyy').textContent = ab.length; document.getElementById('m-xc').textContent = xc.length; document.getElementById('m-ops').textContent = ops; document.getElementById('m-cost').textContent = '₹' + avgCost.toFixed(2); document.getElementById('m-rate').textContent = rate.toFixed(1) + '%';
+      const custErr = sum.reduce((a, r) => a + (+r['Customer Error'] || 0), 0);
+      const rejected = sum.reduce((a, r) => a + (+r['Rejected'] || 0), 0);
+      document.getElementById('m-total').textContent = total.toLocaleString(); document.getElementById('m-abbyy').textContent = ab.length; document.getElementById('m-xc').textContent = xc.length; document.getElementById('m-ops').textContent = ops; document.getElementById('m-rate').textContent = rate.toFixed(1) + '%';
+      const mce = document.getElementById('m-custerr'); if (mce) mce.textContent = custErr.toLocaleString();
+      const mrj = document.getElementById('m-rejected'); if (mrj) mrj.textContent = rejected.toLocaleString();
       document.getElementById('mb-total').style.width = '100%'; document.getElementById('mb-abbyy').style.width = Math.min(100, ab.length / Math.max(ab.length + xc.length, 1) * 100) + '%'; document.getElementById('mb-xc').style.width = Math.min(100, xc.length / Math.max(ab.length + xc.length, 1) * 100) + '%'; document.getElementById('mb-ops').style.width = Math.min(100, ops / 50 * 100) + '%';
+      const maxErr = Math.max(custErr, rejected, 1);
+      const mbce = document.getElementById('mb-custerr'); if (mbce) mbce.style.width = Math.min(100, custErr / maxErr * 100) + '%';
+      const mbrj = document.getElementById('mb-rejected'); if (mbrj) mbrj.style.width = Math.min(100, rejected / maxErr * 100) + '%';
     }
     function updateSidePanel() {
       const ab = getFiltered('abbyy'), xc = getFiltered('xc'); const { data: src } = getSrc();
@@ -4920,6 +4968,16 @@
       renderDashCW();
     }
     function setDashCWPage(p) { dashCWPage = p; renderDashCWPaged(); }
+    let dashCWView = 'flat';
+    function switchDashCW(view) {
+      dashCWView = view;
+      document.getElementById('dash-cw-tab-flat').classList.toggle('active', view === 'flat');
+      document.getElementById('dash-cw-tab-pivot').classList.toggle('active', view === 'pivot');
+      document.getElementById('dash-cw-flat-view').style.display = view === 'flat' ? 'block' : 'none';
+      document.getElementById('dash-cw-pivot-view').style.display = view === 'pivot' ? 'block' : 'none';
+      document.getElementById('dash-cw-flat-controls').style.display = view === 'flat' ? 'flex' : 'none';
+      document.getElementById('dash-cw-pivot-controls').style.display = view === 'pivot' ? 'flex' : 'none';
+    }
     function renderDashCW() {
       const { data: src } = getSrc(); const g = {}; src.forEach(r => { const c = r['Location'] || '—'; const q = r['Operation Queue'] || 'General'; const k = `${c}|||${q}`; if (!g[k]) g[k] = { center: c, queue: q, count: 0, earnings: 0 }; g[k].count += (+r['Total Count'] || 0); g[k].earnings += (+r['Total Earnings'] || 0); });
       dashCWDataRaw = Object.values(g); const badge = document.getElementById('dash-cw-badge'); if (badge) badge.textContent = dashCWDataRaw.length + ' rows';
@@ -4930,6 +4988,36 @@
       if (queueSearch) filtered = filtered.filter(r => r.queue.toLowerCase().includes(queueSearch));
       dashCWData = filtered;
       renderDashCWPaged();
+      renderDashCWPivot(src);
+    }
+
+    function renderDashCWPivot(src) {
+      const thead = document.getElementById('dash-cw-pivot-thead');
+      const tbody = document.getElementById('dash-cw-pivot-tbody');
+      const badge = document.getElementById('dash-cw-pivot-badge');
+      if (!thead || !tbody) return;
+      if (!src || !src.length) {
+        thead.innerHTML = '<tr><th>No data</th></tr>'; tbody.innerHTML = ''; if (badge) badge.textContent = '0'; return;
+      }
+      const qs = [...new Set(src.map(r => r['Operation Queue'] || 'General').filter(Boolean))].sort();
+      const cens = [...new Set(src.map(r => r['Location'] || '').filter(Boolean))].sort();
+      if (!qs.length || !cens.length) { thead.innerHTML = '<tr><th>No data</th></tr>'; tbody.innerHTML = ''; return; }
+      const pivot = {}; const colTotals = {}; const rowTotals = {}; let grand = 0;
+      qs.forEach(q => colTotals[q] = 0);
+      cens.forEach(c => { pivot[c] = {}; rowTotals[c] = 0; qs.forEach(q => pivot[c][q] = 0); });
+      src.forEach(r => {
+        const c = r['Location'] || ''; const q = r['Operation Queue'] || 'General'; const n = +r['Total Count'] || 0;
+        if (pivot[c] !== undefined) { pivot[c][q] = (pivot[c][q] || 0) + n; rowTotals[c] = (rowTotals[c] || 0) + n; colTotals[q] = (colTotals[q] || 0) + n; grand += n; }
+      });
+      if (badge) badge.textContent = cens.length + ' centers · ' + qs.length + ' queues';
+      thead.innerHTML = `<tr><th class="rh">Center</th>${qs.map(q => `<th style="max-width:110px;white-space:normal;word-break:break-word;font-size:9px">${esc(q)}</th>`).join('')}<th class="pivot-total-col">Total</th><th class="pivot-total-col">Share%</th></tr>`;
+      const pc = p => p >= 25 ? 'var(--green)' : p >= 12 ? 'var(--blue)' : p >= 5 ? 'var(--yellow)' : 'var(--orange)';
+      tbody.innerHTML = cens.map(c => {
+        const cfg = CC[c] || { e: '🏢', c: 'var(--blue)', l: 'var(--blue-light)' };
+        const cells = qs.map(q => { const v = pivot[c]?.[q] || 0; return `<td style="text-align:right;font-family:'Space Mono',monospace;font-size:11px">${v > 0 ? `<strong>${v.toLocaleString()}</strong>` : '<span style="color:var(--subtle)">—</span>'}</td>`; }).join('');
+        const rt = rowTotals[c] || 0; const share = grand > 0 ? (rt / grand * 100) : 0;
+        return `<tr><td class="rh"><span style="background:${cfg.l};color:${cfg.c};padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700">${cfg.e} ${c}</span></td>${cells}<td class="pivot-total-col" style="text-align:right;font-family:'Space Mono',monospace">${rt.toLocaleString()}</td><td class="pivot-total-col">${pBar(share, cfg.c)}</td></tr>`;
+      }).join('') + `<tr class="pivot-total-row"><td class="rh"><strong>🏆 Grand Total</strong></td>${qs.map(q => `<td style="text-align:right;font-family:'Space Mono',monospace"><strong>${(colTotals[q]||0).toLocaleString()}</strong></td>`).join('')}<td class="pivot-total-col" style="text-align:right;font-family:'Space Mono',monospace"><strong>${grand.toLocaleString()}</strong></td><td class="pivot-total-col"><strong>100%</strong></td></tr>`;
     }
     function renderDashCWPaged() {
 
@@ -5385,7 +5473,14 @@
       const checked = [...list.querySelectorAll('input:checked')].map(cb => cb.value);
       primOpSelected = checked;
       if (countEl) { countEl.textContent = checked.length; countEl.style.display = checked.length > 0 ? 'inline-block' : 'none'; }
-      if (btn) btn.classList.toggle('has-filter', checked.length > 0);
+      if (btn) {
+        btn.classList.toggle('has-filter', checked.length > 0);
+        const labelSpan = btn.querySelector('.piv-ms-label');
+        if (labelSpan) {
+          if (checked.length === 1) labelSpan.textContent = checked[0];
+          else labelSpan.textContent = '👤 Filter Operator';
+        }
+      }
     }
 
     function updateSecOpCount() {
@@ -5396,7 +5491,14 @@
       const checked = [...list.querySelectorAll('input:checked')].map(cb => cb.value);
       secOpSelected = checked;
       if (countEl) { countEl.textContent = checked.length; countEl.style.display = checked.length > 0 ? 'inline-block' : 'none'; }
-      if (btn) btn.classList.toggle('has-filter', checked.length > 0);
+      if (btn) {
+        btn.classList.toggle('has-filter', checked.length > 0);
+        const labelSpan = btn.querySelector('.piv-ms-label');
+        if (labelSpan) {
+          if (checked.length === 1) labelSpan.textContent = checked[0];
+          else labelSpan.textContent = '👥 Filter Sec Op';
+        }
+      }
     }
 
     function togglePivMSDrop(id, e) {
@@ -5432,7 +5534,14 @@
       const countEl = document.getElementById(countId);
       const btn = document.getElementById(btnId);
       if (countEl) { countEl.textContent = '0'; countEl.style.display = 'none'; }
-      if (btn) btn.classList.remove('has-filter');
+      if (btn) {
+        btn.classList.remove('has-filter');
+        const labelSpan = btn.querySelector('.piv-ms-label');
+        if (labelSpan) {
+          if (btnId === 'prim-op-ms-btn') labelSpan.textContent = '👤 Filter Operator';
+          if (btnId === 'sec-op-ms-btn') labelSpan.textContent = '👥 Filter Sec Op';
+        }
+      }
     }
 
     // Close piv dropdowns on outside click
@@ -5585,6 +5694,7 @@
     window.filterDashCW = filterDashCW;
     window.clearDashCWFilters = clearDashCWFilters;
     window.sortDashCW = sortDashCW;
+    window.switchDashCW = switchDashCW;
   </script>
   <script>
     // Hide initial loader once fonts/DOM are ready — show login
