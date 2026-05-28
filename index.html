@@ -1,5 +1,7 @@
 
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -3206,6 +3208,54 @@
             </div>
             <!-- <div class="scroll-indicator-bar"></div> -->
           </div>
+
+          <!-- ======================== ABBYY ERROR ANALYSIS (Location × Error Reason) ======================== -->
+          <div class="table-card" style="margin-top:14px">
+            <div class="table-header">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">📌 ABBYY Error Analysis — Location × Error Reason</div>
+                <span class="cnt-badge" id="ea-badge" style="background:var(--red-light);color:var(--red);border-color:var(--red)">0</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;padding:8px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+              <!-- Location dropdown -->
+              <select class="filter-input" id="ea-loc-filter" onchange="renderEATable()" style="max-width:160px">
+                <option value="">📍 All Locations</option>
+                <option>Ahmedabad</option>
+                <option>Karjan</option>
+                <option>Vadodara</option>
+                <option>Vadodara-WFH</option>
+                <option>Mangalore</option>
+                <option>Chennai</option>
+              </select>
+              <!-- Error Reason dropdown (A→Z, populated dynamically) -->
+              <select class="filter-input" id="ea-reason-filter" onchange="renderEATable()" style="max-width:190px">
+                <option value="">🗂 All Error Reasons</option>
+              </select>
+              <!-- A→Z / Z→A / Count sort -->
+              <select class="filter-input" id="ea-sort-order" onchange="renderEATable()" style="max-width:140px">
+                <option value="az">A → Z (Reason)</option>
+                <option value="za">Z → A (Reason)</option>
+                <option value="count-desc">Count ↓</option>
+                <option value="count-asc">Count ↑</option>
+              </select>
+              <!-- Search -->
+              <input type="text" class="filter-input" id="ea-search" placeholder="🔍 Search location / reason..." oninput="renderEATable()" style="width:200px">
+              <button class="btn btn-outline btn-sm" onclick="clearEAFilters()">✕ Clear</button>
+              <span class="filter-sep"></span>
+              <button class="print-btn" onclick="printSection('ea-pivot-table','ABBYY Error Analysis')">🖨️ Print</button>
+              <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('ea-pivot-table','ABBYY_Error_Analysis')">📥 Export</button>
+            </div>
+            <div class="scroll-wrap">
+              <div class="table-wrap">
+                <table id="ea-pivot-table" class="pivot-tbl">
+                  <thead id="ea-pivot-thead"></thead>
+                  <tbody id="ea-pivot-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- ======================== XC PAGE ======================== -->
@@ -3944,7 +3994,7 @@
       if (name === 'backup') updateStorageInfo();
       if (name === 'daywise') { dwPage = 1; populateDWQF(); renderDW(); }
       if (name === 'centerwise') renderCW();
-      if (name === 'abbyy') { abbyyPage = 1; renderAbbyy(); renderAbbyyPivot(); renderAbbyyPrimaryPivot(); }
+      if (name === 'abbyy') { abbyyPage = 1; renderAbbyy(); renderAbbyyPivot(); renderAbbyyPrimaryPivot(); populateEAReasonDropdown(); renderEATable(); }
       if (name === 'xc') { xcPage = 1; renderXC(); }
     }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
@@ -5695,6 +5745,148 @@
     window.clearDashCWFilters = clearDashCWFilters;
     window.sortDashCW = sortDashCW;
     window.switchDashCW = switchDashCW;
+  </script>
+  <script>
+    // ============================================================
+    // ABBYY ERROR ANALYSIS PAGE — Location × Error Reason Pivot
+    // ============================================================
+
+    function populateEAReasonDropdown() {
+      const reasons = [...new Set(DB.abbyy.map(r => r['Error Reason']).filter(Boolean))].sort();
+      const sel = document.getElementById('ea-reason-filter');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">🗂 All Error Reasons</option>' +
+        reasons.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join('');
+    }
+
+    function clearEAFilters() {
+      const ids = ['ea-loc-filter','ea-reason-filter','ea-search'];
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      const sort = document.getElementById('ea-sort-order');
+      if (sort) sort.value = 'az';
+      renderEATable();
+    }
+
+    function renderEATable() {
+      const thead = document.getElementById('ea-pivot-thead');
+      const tbody = document.getElementById('ea-pivot-tbody');
+      const badge = document.getElementById('ea-badge');
+      if (!thead || !tbody) return;
+
+      const locF    = document.getElementById('ea-loc-filter')?.value || '';
+      const reasonF = document.getElementById('ea-reason-filter')?.value || '';
+      const searchQ = (document.getElementById('ea-search')?.value || '').toLowerCase();
+      const sortOrd = document.getElementById('ea-sort-order')?.value || 'az';
+
+      // Filter source data
+      let src = [...DB.abbyy];
+      if (locF)    src = src.filter(r => (r['Location'] || r['Location 1'] || '') === locF);
+      if (reasonF) src = src.filter(r => (r['Error Reason'] || '') === reasonF);
+      if (searchQ) src = src.filter(r =>
+        (r['Error Reason'] || '').toLowerCase().includes(searchQ) ||
+        (r['Location'] || r['Location 1'] || '').toLowerCase().includes(searchQ)
+      );
+
+      if (badge) badge.textContent = src.length + ' errors';
+
+      // ROWS = Locations
+      const allLocs = locF
+        ? [locF]
+        : [...new Set(src.map(r => r['Location'] || r['Location 1'] || '').filter(Boolean))].sort();
+
+      // COLUMNS = Error Reasons (sorted per sortOrd)
+      let allReasons = [...new Set(src.map(r => r['Error Reason'] || '').filter(Boolean))];
+      if (sortOrd === 'az') allReasons.sort((a,b) => a.localeCompare(b));
+      else if (sortOrd === 'za') allReasons.sort((a,b) => b.localeCompare(a));
+      else {
+        // for count sorts, sort reasons by their grand column total
+        const reasonTotal = r => src.filter(x => (x['Error Reason']||'') === r).length;
+        if (sortOrd === 'count-desc') allReasons.sort((a,b) => reasonTotal(b) - reasonTotal(a));
+        else allReasons.sort((a,b) => reasonTotal(a) - reasonTotal(b));
+      }
+
+      // Build pivot map: loc → { reason: count }
+      const pivMap = {};
+      src.forEach(r => {
+        const loc    = r['Location'] || r['Location 1'] || '—';
+        const reason = r['Error Reason'] || '—';
+        if (!pivMap[loc]) pivMap[loc] = {};
+        pivMap[loc][reason] = (pivMap[loc][reason] || 0) + 1;
+      });
+
+      if (!allLocs.length || !allReasons.length) {
+        thead.innerHTML = '<tr><th colspan="20" style="text-align:center;color:var(--muted);padding:14px">No data — upload ABBYY data or adjust filters</th></tr>';
+        tbody.innerHTML = '';
+        return;
+      }
+
+      // ---- HEADER: #  |  Location  |  Reason1  |  Reason2  …  |  Grand Total ----
+      const sortIcon = sortOrd==='az'?'▲':sortOrd==='za'?'▼':'#';
+      thead.innerHTML = `<tr>
+        <th class="rh" style="min-width:28px">#</th>
+        <th class="rh" style="min-width:130px">📍 Location</th>
+        ${allReasons.map(r => `<th title="${esc(r)}" style="min-width:80px;cursor:pointer" onclick="cycleEASort()">${esc(r.length>14?r.substring(0,12)+'…':r)}</th>`).join('')}
+        <th class="pivot-total-col" style="min-width:80px">Grand Total</th>
+      </tr>
+      <tr style="font-size:9px">
+        <th colspan="2" style="background:var(--bg);color:var(--muted);text-align:right;padding:3px 8px">Sort by reason: <span style="cursor:pointer;color:var(--blue)" onclick="cycleEASort()">${sortOrd==='az'?'A→Z':sortOrd==='za'?'Z→A':sortOrd==='count-desc'?'Count ↓':'Count ↑'} ▸ click to change</span></th>
+        ${allReasons.map(() => '<th style="background:var(--bg)"></th>').join('')}
+        <th style="background:var(--bg)"></th>
+      </tr>`;
+
+      // ---- COLUMN TOTALS ----
+      const colTotals = {};
+      allReasons.forEach(r => colTotals[r] = 0);
+      let grandTotal = 0;
+
+      // ---- BODY: one row per location ----
+      tbody.innerHTML = allLocs.map((loc, idx) => {
+        let rowTotal = 0;
+        const cells = allReasons.map(reason => {
+          const v = pivMap[loc]?.[reason] || 0;
+          colTotals[reason] += v;
+          rowTotal += v;
+          grandTotal += v;
+          return `<td style="text-align:center;font-family:'Space Mono',monospace">${v > 0 ? `<strong>${v}</strong>` : '<span style="color:var(--subtle)">—</span>'}</td>`;
+        }).join('');
+        const cfg = CC[loc];
+        const locLabel = cfg
+          ? `<span style="display:inline-flex;align-items:center;gap:4px"><span style="background:${cfg.l};color:${cfg.c};padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${esc(loc)}</span></span>`
+          : `<strong>${esc(loc)}</strong>`;
+        return `<tr>
+          <td style="text-align:center;font-size:10px;color:var(--muted)">${idx+1}</td>
+          <td class="rh">${locLabel}</td>
+          ${cells}
+          <td class="pivot-total-col" style="text-align:center;font-family:'Space Mono',monospace"><strong>${rowTotal}</strong></td>
+        </tr>`;
+      }).join('')
+      // GRAND TOTAL ROW
+      + `<tr class="grand-total-row">
+          <td>—</td>
+          <td class="rh"><strong>Grand Total</strong></td>
+          ${allReasons.map(r => `<td style="text-align:center;font-family:'Space Mono',monospace"><strong>${colTotals[r]}</strong></td>`).join('')}
+          <td style="text-align:center;font-family:'Space Mono',monospace"><strong>${grandTotal}</strong></td>
+        </tr>`;
+    }
+
+    function cycleEASort() {
+      const sel = document.getElementById('ea-sort-order');
+      if (!sel) return;
+      const order = ['az','za','count-desc','count-asc'];
+      const cur = order.indexOf(sel.value);
+      sel.value = order[(cur + 1) % order.length];
+      renderEATable();
+    }
+
+    // Hook into showPage — render EA table when ABBYY page opens
+    const _origShowPage = window.showPage || showPage;
+    window.showPage = function(name, btn) {
+      _origShowPage(name, btn);
+      if (name === 'abbyy') {
+        populateEAReasonDropdown();
+        renderEATable();
+      }
+    };
   </script>
   <script>
     // Hide initial loader once fonts/DOM are ready — show login
