@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1941,6 +1943,155 @@
       opacity: 1
     }
 
+    /* ── UPLOAD LOADING OVERLAY ── */
+    #upload-loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.72);
+      backdrop-filter: blur(4px);
+      z-index: 8000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0
+    }
+    #upload-loading-overlay.show { display: flex }
+    .ulo-box {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 32px 36px;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+      border: 1px solid var(--border);
+      min-width: 280px;
+      max-width: 360px;
+      animation: uloIn .25s cubic-bezier(.34,1.56,.64,1)
+    }
+    @keyframes uloIn {
+      from { opacity:0; transform:scale(.88) translateY(20px) }
+      to   { opacity:1; transform:scale(1) translateY(0) }
+    }
+    .ulo-spinner {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 4px solid var(--border);
+      border-top-color: var(--blue);
+      border-right-color: var(--purple);
+      animation: uloSpin .75s linear infinite;
+      margin: 0 auto 16px
+    }
+    @keyframes uloSpin { to { transform: rotate(360deg) } }
+    .ulo-title {
+      font-size: 15px; font-weight: 700; margin-bottom: 4px; color: var(--text)
+    }
+    .ulo-file {
+      font-size: 11px; color: var(--muted); margin-bottom: 14px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; margin-inline: auto
+    }
+    .ulo-bar-wrap {
+      height: 4px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 4px
+    }
+    .ulo-bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      border-radius: 10px;
+      animation: uloProg 1.4s ease-in-out infinite
+    }
+    @keyframes uloProg {
+      0%   { width:0%;  margin-left:0% }
+      50%  { width:60%; margin-left:20% }
+      100% { width:0%;  margin-left:100% }
+    }
+    .ulo-steps {
+      display: flex; gap: 6px; justify-content: center; margin-top: 14px; flex-wrap: wrap
+    }
+    .ulo-step {
+      font-size: 10px; padding: 3px 8px; border-radius: 20px;
+      background: var(--bg); color: var(--muted); border: 1px solid var(--border);
+      transition: all .3s; font-weight: 600
+    }
+    .ulo-step.active {
+      background: var(--blue-light); color: var(--blue); border-color: var(--blue)
+    }
+    .ulo-step.done {
+      background: var(--green-light); color: var(--green); border-color: var(--green)
+    }
+
+    /* ── UPLOAD RESULT NOTIFICATION ── */
+    #upload-result-notif {
+      display: none;
+      position: fixed;
+      top: calc(var(--header-h) + 14px);
+      right: 18px;
+      z-index: 8500;
+      width: 320px;
+      max-width: calc(100vw - 28px);
+      background: var(--card);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.22);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      animation: notifIn .35s cubic-bezier(.34,1.56,.64,1)
+    }
+    #upload-result-notif.show { display: block }
+    @keyframes notifIn {
+      from { opacity:0; transform:translateX(40px) }
+      to   { opacity:1; transform:translateX(0) }
+    }
+    .urn-header {
+      padding: 12px 14px 10px;
+      display: flex; align-items: center; gap: 10px
+    }
+    .urn-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0
+    }
+    .urn-icon.success { background: var(--green-light) }
+    .urn-icon.error   { background: var(--red-light) }
+    .urn-title {
+      font-size: 13px; font-weight: 700; margin-bottom: 1px
+    }
+    .urn-sub {
+      font-size: 11px; color: var(--muted)
+    }
+    .urn-close {
+      margin-left: auto; background: var(--bg); border: none;
+      width: 24px; height: 24px; border-radius: 6px;
+      font-size: 13px; cursor: pointer; color: var(--muted);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0
+    }
+    .urn-body {
+      padding: 0 14px 12px;
+      display: flex; flex-direction: column; gap: 5px
+    }
+    .urn-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; padding: 4px 8px; background: var(--bg);
+      border-radius: 7px; border: 1px solid var(--border)
+    }
+    .urn-row-label { color: var(--muted) }
+    .urn-row-val { font-weight: 700; font-family: 'Space Mono', monospace; font-size: 11px }
+    .urn-progress {
+      height: 3px; background: var(--border); border-radius: 10px; overflow: hidden; margin: 4px 14px 0
+    }
+    .urn-progress-fill {
+      height: 100%; border-radius: 10px; transition: width .6s ease
+    }
+    .urn-progress-fill.success { background: var(--green) }
+    .urn-progress-fill.error   { background: var(--red) }
+    .urn-footer {
+      padding: 8px 14px 12px; display: flex; gap: 6px
+    }
+    .urn-btn {
+      flex: 1; padding: 6px 0; border-radius: 8px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      transition: all .2s
+    }
+    .urn-btn:hover { background: var(--border) }
+    .urn-btn.primary { background: var(--blue); color: white; border-color: var(--blue) }
+    .urn-btn.primary:hover { background: var(--blue-dark) }
+
     /* OVERLAY */
     .overlay {
       display: none;
@@ -2054,8 +2205,13 @@
     }
 
     @media(max-width:768px) {
+      :root { --header-h: 54px; }
+
       .sidebar {
-        transform: translateX(-100%)
+        transform: translateX(-100%);
+        width: 260px !important;
+        z-index: 150;
+        box-shadow: 4px 0 20px rgba(0,0,0,.18)
       }
 
       .sidebar.open {
@@ -2064,29 +2220,143 @@
 
       .main {
         margin-left: 0;
-        padding: 10px
+        padding: 8px
       }
 
       .mobile-menu-btn {
-        display: block
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        font-size: 18px;
+        color: var(--text);
+        flex-shrink: 0
       }
 
-      .metrics-grid {
-        grid-template-columns: 1fr 1fr
+      /* Header: hide non-essential items on mobile */
+      .logo-sub { display: none }
+      .header-controls { gap: 3px }
+      .last-update-badge { display: none }
+      .gsync-hbadge { display: none }
+      .user-badge .role-pill { display: none }
+
+      /* Metrics */
+      .metrics-grid { grid-template-columns: 1fr 1fr; gap: 7px }
+      .mc-value { font-size: 18px }
+
+      /* Charts & Insight */
+      .charts-grid, .insight-grid { grid-template-columns: 1fr }
+
+      /* Filter bars: scroll horizontally */
+      .filter-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 5px;
+        padding: 7px 9px
+      }
+      .filter-bar::-webkit-scrollbar { height: 0 }
+      .adv-filter-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch
+      }
+      .adv-filter-bar::-webkit-scrollbar { height: 0 }
+
+      /* Page headings */
+      .page-title { font-size: 15px }
+      .page-sub { font-size: 11px; margin-bottom: 9px }
+
+      /* Table cards */
+      .table-card { padding: 10px; border-radius: 10px }
+      .table-header { flex-direction: column; align-items: flex-start; gap: 6px }
+      .table-header > div:last-child { width: 100%; overflow-x: auto }
+
+      /* Insight cards: tighter */
+      .insight-card { border-radius: 10px }
+      .insight-hdr { padding: 8px 10px 6px }
+      .ic-main { font-size: 12px }
+
+      /* Chart cards */
+      .chart-card { padding: 10px }
+      .chart-wrap { height: 160px }
+
+      /* Login box */
+      .login-box { padding: 24px 18px; border-radius: 14px }
+
+      /* Modals full-screen on mobile */
+      .modal-box {
+        width: 95%;
+        max-width: 100%;
+        padding: 16px;
+        border-radius: 12px
+      }
+      .big-modal-box {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        max-height: 100vh;
+        padding: 14px
       }
 
-      .charts-grid,
-      .insight-grid {
-        grid-template-columns: 1fr
+      /* Queue pills */
+      .qpills-wrap {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding: 6px 9px
       }
+      .qpills-wrap::-webkit-scrollbar { height: 0 }
+      .qpill { white-space: nowrap; flex-shrink: 0 }
 
-      .logo-sub {
-        display: none
-      }
+      /* Pivot tables */
+      .pivot-tbl th, .pivot-tbl td { padding: 5px 6px; font-size: 10px }
 
-      .header-controls {
-        gap: 3px
-      }
+      /* Upload grid */
+      .upload-grid { grid-template-columns: 1fr }
+
+      /* Settings */
+      .settings-row { flex-direction: column; align-items: flex-start; gap: 6px }
+
+      /* Backup grid */
+      .backup-grid { grid-template-columns: 1fr 1fr }
+
+      /* Op stats */
+      .op-stats-grid { grid-template-columns: 1fr 1fr }
+
+      /* Pagination */
+      .pagination { justify-content: center }
+
+      /* CW tabs */
+      .cw-tabs { overflow-x: auto; flex-wrap: nowrap }
+      .cw-tab { flex-shrink: 0 }
+
+      /* Advanced dropdown full-width */
+      .adv-dropdown { min-width: 200px; max-width: 90vw }
+
+      /* Toast bottom safe area */
+      .toast { bottom: env(safe-area-inset-bottom, 14px); right: 10px; left: 10px; max-width: 100% }
+    }
+
+    @media(max-width:480px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr; gap: 6px }
+      .mc-value { font-size: 16px }
+      .mc-label { font-size: 8px }
+      .header { padding: 0 10px; gap: 7px }
+      .logo-icon { width: 28px; height: 28px; border-radius: 7px }
+      .logo-icon svg { width: 14px; height: 14px }
+      .logo-text { font-size: 11px }
+      table { font-size: 11px }
+      th { font-size: 8px; padding: 6px 7px }
+      td { padding: 6px 7px; font-size: 11px }
+      .btn { padding: 5px 10px; font-size: 10px }
+      .page-title { font-size: 14px }
+      .chart-wrap { height: 140px }
+      .backup-grid { grid-template-columns: 1fr }
     }
 
     ::-webkit-scrollbar {
@@ -2284,6 +2554,100 @@
         display: block !important
       }
     }
+
+/* ===== SYNC OVERLAY (circle text animation) ===== */
+@property --sync-rotate { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --sync-drot   { syntax: '<number>'; inherits: true; initial-value: 0; }
+@keyframes syncSpin { to { --sync-rotate: 1; --sync-drot: 1; } }
+#sync-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  display: none; align-items: center; justify-content: center;
+  background: transparent;
+  pointer-events: none;
+  font-family: 'DM Sans', serif;
+  color: #1e293b;
+}
+#sync-overlay.show { display: flex; }
+#sync-overlay .sync-stage {
+  --circle-size: 32vmin;
+  --spacing: 3vmin;
+  --font-size: 4.5vmin;
+  --ease-speed: 50ms;
+  position: relative;
+  width: var(--circle-size); height: var(--circle-size);
+  font-size: var(--font-size);
+  animation: syncSpin 6s linear infinite;
+}
+#sync-overlay ul {
+  position: absolute; inset: 0; margin: 0; padding: 0;
+  list-style: none; border-radius: 50%;
+  transform: rotate(calc(var(--sync-rotate) * 360deg));
+}
+#sync-overlay li {
+  position: absolute; top: 50%; left: 50%;
+  line-height: 0; transform-origin: 0 0; white-space: nowrap;
+}
+#sync-overlay li:nth-child(1){rotate:18deg}#sync-overlay li:nth-child(2){rotate:36deg}
+#sync-overlay li:nth-child(3){rotate:54deg}#sync-overlay li:nth-child(4){rotate:72deg}
+#sync-overlay li:nth-child(5){rotate:90deg}#sync-overlay li:nth-child(6){rotate:108deg}
+#sync-overlay li:nth-child(7){rotate:126deg}#sync-overlay li:nth-child(8){rotate:144deg}
+#sync-overlay li:nth-child(9){rotate:162deg}#sync-overlay li:nth-child(10){rotate:180deg}
+#sync-overlay li:nth-child(11){rotate:198deg}#sync-overlay li:nth-child(12){rotate:216deg}
+#sync-overlay li:nth-child(13){rotate:234deg}#sync-overlay li:nth-child(14){rotate:252deg}
+#sync-overlay li:nth-child(15){rotate:270deg}#sync-overlay li:nth-child(16){rotate:288deg}
+#sync-overlay li:nth-child(17){rotate:306deg}#sync-overlay li:nth-child(18){rotate:324deg}
+#sync-overlay li:nth-child(19){rotate:342deg}#sync-overlay li:nth-child(20){rotate:360deg}
+#sync-overlay li:nth-child(1)  span { color:#ef4444 }
+#sync-overlay li:nth-child(2)  span { color:#f97316 }
+#sync-overlay li:nth-child(3)  span { color:#f59e0b }
+#sync-overlay li:nth-child(4)  span { color:#eab308 }
+#sync-overlay li:nth-child(5)  span { color:#84cc16 }
+#sync-overlay li:nth-child(6)  span { color:#22c55e }
+#sync-overlay li:nth-child(7)  span { color:#10b981 }
+#sync-overlay li:nth-child(8)  span { color:#14b8a6 }
+#sync-overlay li:nth-child(9)  span { color:#06b6d4 }
+#sync-overlay li:nth-child(10) span { color:#0ea5e9 }
+#sync-overlay li:nth-child(11) span { color:#3b82f6 }
+#sync-overlay li:nth-child(12) span { color:#6366f1 }
+#sync-overlay li:nth-child(13) span { color:#8b5cf6 }
+#sync-overlay li:nth-child(14) span { color:#a855f7 }
+#sync-overlay li:nth-child(15) span { color:#d946ef }
+#sync-overlay li:nth-child(16) span { color:#ec4899 }
+#sync-overlay li:nth-child(17) span { color:#f43f5e }
+#sync-overlay li:nth-child(18) span { color:#ef4444 }
+#sync-overlay li:nth-child(19) span { color:#f97316 }
+#sync-overlay li:nth-child(20) span { color:#eab308 }
+#sync-overlay li span {
+  --rotate-velocity: calc(var(--sync-rotate) - var(--sync-drot));
+  --rotate-spacing: calc(var(--spacing) * -4 * var(--rotate-velocity));
+  --x: calc(var(--circle-size) / 2 + var(--rotate-spacing));
+  --y: calc(10px * var(--rotate-velocity));
+  --r: calc(90deg * var(--rotate-velocity));
+  display: inline-block;
+  transform: translate(var(--x), var(--y)) rotate(var(--r));
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+#sync-overlay li span:nth-child(1){--y:calc(0px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 0ms ease-out}
+#sync-overlay li span:nth-child(2){--y:calc(-20px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 50ms ease-out}
+#sync-overlay li span:nth-child(3){--y:calc(-40px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 100ms ease-out}
+#sync-overlay li span:nth-child(4){--y:calc(-60px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 150ms ease-out}
+#sync-overlay li span:nth-child(5){--y:calc(-80px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 200ms ease-out}
+#sync-overlay li span:nth-child(6){--y:calc(-100px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 250ms ease-out}
+#sync-overlay li span:nth-child(7){--y:calc(-120px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 300ms ease-out}
+#sync-overlay li span:nth-child(8){--y:calc(-140px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 350ms ease-out}
+#sync-overlay li span:nth-child(9){--y:calc(-160px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 400ms ease-out}
+#sync-overlay li span:nth-child(10){--y:calc(-180px * var(--rotate-velocity));transform-origin:var(--x) 0;transition:--sync-drot 450ms ease-out}
+#sync-overlay .sync-status {
+  position: fixed; left: 50%; bottom: 6vh; transform: translateX(-50%);
+  font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase;
+  font-family: 'Space Mono', monospace; font-weight: 700;
+  background: linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#06b6d4,#6366f1,#ec4899);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+
   </style>
 </head>
 
@@ -3893,6 +4257,39 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- ══ UPLOAD LOADING OVERLAY ══ -->
+  <div id="upload-loading-overlay">
+    <div class="ulo-box">
+      <div class="ulo-spinner"></div>
+      <div class="ulo-title">📂 Data Update Thaay Chhe...</div>
+      <div class="ulo-file" id="ulo-filename">file.xlsx</div>
+      <div class="ulo-bar-wrap"><div class="ulo-bar-fill"></div></div>
+      <div class="ulo-steps">
+        <span class="ulo-step active" id="ulo-s1">📖 Reading</span>
+        <span class="ulo-step" id="ulo-s2">⚙️ Processing</span>
+        <span class="ulo-step" id="ulo-s3">📊 Updating</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ UPLOAD RESULT NOTIFICATION ══ -->
+  <div id="upload-result-notif">
+    <div class="urn-header">
+      <div class="urn-icon" id="urn-icon">✅</div>
+      <div>
+        <div class="urn-title" id="urn-title">Upload Successful!</div>
+        <div class="urn-sub" id="urn-sub">Data successfully updated</div>
+      </div>
+      <button class="urn-close" onclick="closeUploadNotif()">✕</button>
+    </div>
+    <div class="urn-progress"><div class="urn-progress-fill" id="urn-prog-fill"></div></div>
+    <div class="urn-body" id="urn-body"></div>
+    <div class="urn-footer">
+      <button class="urn-btn" onclick="closeUploadNotif()">Close</button>
+      <button class="urn-btn primary" onclick="showPage('dashboard',document.getElementById('nav-dashboard'));closeUploadNotif()">📊 Dashboard Juo</button>
+    </div>
+  </div>
   <div class="modal" id="modal-confirm">
     <div class="modal-backdrop" onclick="closeModal()"></div>
     <div class="modal-box"><button class="modal-close" onclick="closeModal()">×</button>
@@ -4012,7 +4409,7 @@
     function fmtMoney(v) { const n=parseFloat(v)||0; return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
     function fmtNum(v) { const n=parseFloat(v)||0; return n.toLocaleString('en-IN'); }
     function esc(v) { return String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-    function sameName(a, b) { const n = v => String(v || '').toLowerCase().replace(/@.*$/, '').replace(/[^a-z0-9]+/g, ' ').trim(); const na = n(a), nb = n(b); if (!na || !nb) return false; return na === nb || na.includes(nb) || nb.includes(na); }
+    function sameName(a, b) { const n = v => String(v || '').toLowerCase().replace(/@.*$/, '').replace(/[^a-z0-9]+/g, ' ').trim(); const na = n(a), nb = n(b); if (!na || !nb) return false; return na === nb; }
     function empMatch(emp, row) { return [row['Primary Operator'], row['Secondary Operator'], row['Verification Operator'], row['Exception Operator'], row['Product Verification Operator']].filter(Boolean).some(s => sameName(emp['User Name'], s) || sameName(emp['Email Id'], s)); }
     function getEarnings(op) {
       if (DB.daywise.length > 0) { const rows = DB.daywise.filter(r => sameName(r['User Name'], op) || sameName(r['Email Id'], op)); if (rows.length) return rows.reduce((a, r) => a + (+r['Total Earnings'] || 0), 0); }
@@ -4105,8 +4502,8 @@
      const s1 = (document.getElementById('top10-abbyy-search')?.value || '').toLowerCase();
       if (s1) abbyyList = abbyyList.filter(r => r.name.toLowerCase().includes(s1));
       const sort1 = document.getElementById('top10-abbyy-sort')?.value || 'errors';
-      const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op.trim() && op !== '—') { const locKey = r['Location'] || r['Location 1'] || ''; const key = op + '|||' + locKey; oErr[key] = (oErr[key] || 0) + 1; if (locKey) { oLoc[op] = oLoc[op] || {}; oLoc[op][locKey] = (oLoc[op][locKey] || 0) + 1; } } });
-      let abbyyList = Object.entries(oErr).map(([key, cnt]) => { const name = key.split('|||')[0]; return { name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }; });
+      const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op.trim() && op !== '—') { oErr[op] = (oErr[op] || 0) + 1; const locKey = r['Location'] || r['Location 1'] || ''; if (locKey) { oLoc[op] = oLoc[op] || {}; oLoc[op][locKey] = (oLoc[op][locKey] || 0) + 1; } } });
+      let abbyyList = Object.entries(oErr).map(([name, cnt]) => { return { name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }; });
       if (s1) abbyyList = abbyyList.filter(r => r.name.toLowerCase().includes(s1));
       const loc1 = document.getElementById('top10-abbyy-loc')?.value || '';
       if (loc1) abbyyList = abbyyList.filter(r => r.loc === loc1);
@@ -4117,8 +4514,8 @@
       // Performers top 10 (column header changed to Operator)
       const s2 = (document.getElementById('top10-prod-search')?.value || '').toLowerCase();
       const sort2 = document.getElementById('top10-prod-sort')?.value || 'count';
-      const oc = {}; const ocEarn = {}; const ocLoc = {}; const ocQueue = {}; src.forEach(r => { const n = r['User Name']; const loc = r['Location'] || ''; const q = r['Operation Queue'] || ''; if (n) { const k = n + '|||' + loc; if (!oc[k]) { oc[k] = 0; ocEarn[k] = 0; ocLoc[k] = loc; ocQueue[k] = q; } oc[k] += (+r['Total Count'] || 0); ocEarn[k] += (+r['Total Earnings'] || 0); } });
-      let prodList = Object.entries(oc).map(([key, lc]) => { const name = key.split('|||')[0]; const loc = ocLoc[key] || '—'; const earn = ocEarn[key] || 0; const abErr = ab.filter(a =>
+      const oc = {}; const ocEarn = {}; const ocLoc = {}; const ocQueue = {}; src.forEach(r => { const n = r['User Name']; const loc = r['Location'] || ''; const q = r['Operation Queue'] || ''; if (n) { if (!oc[n]) { oc[n] = 0; ocEarn[n] = 0; ocLoc[n] = ''; ocQueue[n] = q; } oc[n] += (+r['Total Count'] || 0); ocEarn[n] += (+r['Total Earnings'] || 0); if (loc && !ocLoc[n]) ocLoc[n] = loc; } });
+      let prodList = Object.entries(oc).map(([name, lc]) => { const loc = ocLoc[name] || '—'; const earn = ocEarn[name] || 0; const abErr = ab.filter(a =>
   sameName(a['Primary Operator'], name)
 ).length; const xcErr = xc.filter(x =>
   sameName(x['Verification Operator'], name)
@@ -4953,8 +5350,8 @@
       const isDW = DB.daywise.length > 0; const srcBadge = document.getElementById('dash-src-badge');
       if (srcBadge) { srcBadge.className = 'src-badge ' + (isDW ? 'src-dw' : 'src-sum'); srcBadge.textContent = isDW ? '📅 Day-wise' : '📊 Summary'; }
       let rows = [];
-      if (isDW) { const om = {}; DB.daywise.forEach(r => { const k = (r['User Name'] || '') + '|||' + (r['Location'] || ''); if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['Operation Queue'] = r['Operation Queue']; }); Object.values(om).forEach(op => { const sm = DB.summary.find(s => sameName(s['User Name'], op['User Name'])); if (sm) { op['Customer Error'] = (+sm['Customer Error'] || 0); op['Rejected'] = (+sm['Rejected'] || 0); if (!op['Average Unit Cost']) op['Average Unit Cost'] = (+sm['Average Unit Cost'] || 0); } }); rows = Object.values(om); }
-      else rows = DB.summary;
+      if (isDW) { const om = {}; DB.daywise.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0, '_queues': new Set(), '_locs': new Set() }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); if (r['Location']) om[k]['_locs'].add(r['Location']); }); Object.values(om).forEach(op => { op['Operation Queue'] = [...op['_queues']].join(', ') || op['Operation Queue']; op['Location'] = [...op['_locs']].join(', ') || op['Location']; const sm = DB.summary.find(s => sameName(s['User Name'], op['User Name'])); if (sm) { op['Customer Error'] = (+sm['Customer Error'] || 0); op['Rejected'] = (+sm['Rejected'] || 0); if (!op['Average Unit Cost']) op['Average Unit Cost'] = (+sm['Average Unit Cost'] || 0); if (!op['Email Id']) op['Email Id'] = sm['Email Id'] || ''; } }); rows = Object.values(om); }
+      else { const om = {}; DB.summary.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0, '_queues': new Set(), '_locs': new Set() }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); if (r['Location']) om[k]['_locs'].add(r['Location']); }); Object.values(om).forEach(op => { op['Operation Queue'] = [...op['_queues']].join(', ') || op['Operation Queue']; op['Location'] = [...op['_locs']].join(', ') || op['Location']; }); rows = Object.values(om); }
       let sum = [...rows];
       if (cf) sum = sum.filter(r => (r['Location'] || '') === cf); else if (currentCenter !== 'all') sum = sum.filter(r => (r['Location'] || '') === currentCenter);
       sum = sum.map(r => ({ ...r, '_ab': DB.abbyy.filter(a => empMatch(r, a)).length }));
@@ -5169,8 +5566,8 @@
       const s = document.getElementById('emp-search')?.value?.toLowerCase() || ''; const sR = document.getElementById('emp-search')?.value || ''; const cf = document.getElementById('emp-cf')?.value || ''; const qf = document.getElementById('emp-qf')?.value || '';
       const isDW = DB.daywise.length > 0; const note = document.getElementById('emp-src-note'); if (note) note.textContent = isDW ? '📅 Day-wise data' : '📊 Summary data';
       const om = {};
-      if (isDW) { DB.daywise.forEach(r => { const k = (r['User Name'] || '') + '|||' + (r['Location'] || ''); if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0, '_queues': new Set(), 'Customer Error': 0, 'Rejected': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); }); Object.values(om).forEach(op => { const sm = DB.summary.find(s => sameName(s['User Name'], op['User Name'])); if (sm) { op['Customer Error'] = (+sm['Customer Error'] || 0); op['Rejected'] = (+sm['Rejected'] || 0); if (!op['Email Id']) op['Email Id'] = sm['Email Id'] || ''; } op['Operation Queue'] = [...op['_queues']].join(', ') || op['Operation Queue']; }); }
-      else { DB.summary.forEach(r => { const k = (r['User Name'] || '') + '|||' + (r['Location'] || ''); if (!om[k]) om[k] = { ...r, '_queues': new Set() }; if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); }); }
+      if (isDW) { DB.daywise.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0, '_queues': new Set(), '_locs': new Set(), 'Customer Error': 0, 'Rejected': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); if (r['Location']) om[k]['_locs'].add(r['Location']); }); Object.values(om).forEach(op => { const sm = DB.summary.find(s => sameName(s['User Name'], op['User Name'])); if (sm) { op['Customer Error'] = (+sm['Customer Error'] || 0); op['Rejected'] = (+sm['Rejected'] || 0); if (!op['Email Id']) op['Email Id'] = sm['Email Id'] || ''; } op['Operation Queue'] = [...op['_queues']].join(', ') || op['Operation Queue']; op['Location'] = [...op['_locs']].join(', ') || op['Location']; }); }
+      else { DB.summary.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0, '_queues': new Set(), '_locs': new Set() }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); if (r['Operation Queue']) om[k]['_queues'].add(r['Operation Queue']); if (r['Location']) om[k]['_locs'].add(r['Location']); }); Object.values(om).forEach(op => { op['Operation Queue'] = [...op['_queues']].join(', ') || op['Operation Queue']; op['Location'] = [...op['_locs']].join(', ') || op['Location']; }); }
       let data = Object.values(om);
       const qs = [...new Set(data.flatMap(r => (r['_queues'] ? [...r['_queues']] : [r['Operation Queue'] || '']).filter(Boolean)))];
       const qSel = document.getElementById('emp-qf'); if (qSel) { const cur = qSel.value; qSel.innerHTML = '<option value="">All Queues</option>' + qs.map(q => `<option${q === cur ? ' selected' : ''}>${q}</option>`).join(''); }
@@ -5235,7 +5632,7 @@
     // ============================================================
     function openViewAll(type) {
       let data = [], title = '';
-      if (type === 'summary') { if (DB.daywise.length > 0) { const om = {}; DB.daywise.forEach(r => { const k = (r['User Name'] || '') + '|||' + (r['Location'] || ''); if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); }); data = Object.values(om); title = 'All Summary (from Day-wise)'; } else { data = DB.summary; title = 'All Summary Data'; } }
+      if (type === 'summary') { if (DB.daywise.length > 0) { const om = {}; DB.daywise.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); }); data = Object.values(om); title = 'All Summary (from Day-wise)'; } else { const om = {}; DB.summary.forEach(r => { const k = r['User Name'] || ''; if (!k) return; if (!om[k]) om[k] = { ...r, 'Total Count': 0, 'Total Earnings': 0 }; om[k]['Total Count'] += (+r['Total Count'] || 0); om[k]['Total Earnings'] += (+r['Total Earnings'] || 0); }); data = Object.values(om); title = 'All Summary Data'; } }
       else if (type === 'abbyy') { data = DB.abbyy; title = 'All ABBYY Errors'; }
       else if (type === 'xc') { data = DB.xc; title = 'All XC Errors'; }
       else if (type === 'daywise') { data = DB.daywise; title = 'All Day-wise Data'; }
@@ -5290,19 +5687,117 @@
     function dragLeave(id) { document.getElementById(id).classList.remove('drag'); }
     function handleDrop(e, type) { e.preventDefault(); dragLeave('uz-' + type); const f = e.dataTransfer.files[0]; if (f) processFile(f, type); }
     function handleUpload(e, type) { const f = e.target.files[0]; if (f) processFile(f, type); }
+    // ── Upload loading overlay helpers ──
+    function showUploadLoading(filename) {
+      const ov = document.getElementById('upload-loading-overlay');
+      const fn = document.getElementById('ulo-filename');
+      if (fn) fn.textContent = filename;
+      ['ulo-s1','ulo-s2','ulo-s3'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('active','done'); }
+      });
+      const s1 = document.getElementById('ulo-s1');
+      if (s1) s1.classList.add('active');
+      if (ov) ov.classList.add('show');
+    }
+    function advanceUploadStep(step) {
+      const ids = ['ulo-s1','ulo-s2','ulo-s3'];
+      ids.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('active','done');
+        if (idx < step) el.classList.add('done');
+        else if (idx === step) el.classList.add('active');
+      });
+    }
+    function hideUploadLoading() {
+      const ov = document.getElementById('upload-loading-overlay');
+      if (ov) ov.classList.remove('show');
+    }
+    function showUploadResult(success, type, filename, count, errMsg) {
+      const notif = document.getElementById('upload-result-notif');
+      const icon  = document.getElementById('urn-icon');
+      const title = document.getElementById('urn-title');
+      const sub   = document.getElementById('urn-sub');
+      const body  = document.getElementById('urn-body');
+      const prog  = document.getElementById('urn-prog-fill');
+      if (!notif) return;
+      const typeLabels = { summary:'Summary', abbyy:'ABBYY Error', xc:'XC Error', daywise:'Day-wise' };
+      const typeName = typeLabels[type] || type;
+      if (success) {
+        icon.textContent  = '✅';
+        icon.className    = 'urn-icon success';
+        title.textContent = `${typeName} Data Update Thayu! 🎉`;
+        sub.textContent   = `File safalatapurvak load thayu`;
+        prog.className    = 'urn-progress-fill success';
+        prog.style.width  = '100%';
+        const now = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        body.innerHTML = `
+          <div class="urn-row"><span class="urn-row-label">📄 File</span><span class="urn-row-val" style="font-family:inherit;font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${esc(filename)}</span></div>
+          <div class="urn-row"><span class="urn-row-label">📋 Records Loaded</span><span class="urn-row-val" style="color:var(--green)">${count.toLocaleString('en-IN')}</span></div>
+          <div class="urn-row"><span class="urn-row-label">🗂 Data Type</span><span class="urn-row-val" style="color:var(--blue)">${typeName}</span></div>
+          <div class="urn-row"><span class="urn-row-label">🕐 Time</span><span class="urn-row-val">${now}</span></div>`;
+      } else {
+        icon.textContent  = '❌';
+        icon.className    = 'urn-icon error';
+        title.textContent = `Upload Failed!`;
+        sub.textContent   = `File load thavama error aavyo`;
+        prog.className    = 'urn-progress-fill error';
+        prog.style.width  = '100%';
+        body.innerHTML = `
+          <div class="urn-row"><span class="urn-row-label">📄 File</span><span class="urn-row-val" style="font-family:inherit;font-size:10px;max-width:160px;overflow:hidden;text-overflow:ellipsis">${esc(filename)}</span></div>
+          <div class="urn-row" style="border-color:var(--red)"><span class="urn-row-label" style="color:var(--red)">⚠️ Error</span><span class="urn-row-val" style="color:var(--red);font-family:inherit;font-size:10px;white-space:normal">${esc(errMsg||'Unknown error')}</span></div>`;
+      }
+      notif.classList.add('show');
+      // Auto-dismiss after 8 seconds
+      if (notif._autoDismiss) clearTimeout(notif._autoDismiss);
+      notif._autoDismiss = setTimeout(() => closeUploadNotif(), 8000);
+    }
+    function closeUploadNotif() {
+      const n = document.getElementById('upload-result-notif');
+      if (n) { n.classList.remove('show'); if (n._autoDismiss) clearTimeout(n._autoDismiss); }
+    }
+
     function processFile(file, type) {
-      const st = document.getElementById('status-' + type); st.textContent = '⏳ Processing...'; st.style.color = 'var(--yellow)';
+      const st = document.getElementById('status-' + type);
+      st.textContent = '⏳ Processing...'; st.style.color = 'var(--yellow)';
+      showUploadLoading(file.name);
+
       const reader = new FileReader();
       reader.onload = ev => {
-        try {
-          let data = []; if (file.name.endsWith('.csv')) data = parseCSV(ev.target.result);
-          else { const wb = XLSX.read(ev.target.result, { type: 'array' }); const ws = wb.Sheets[wb.SheetNames[0]]; data = XLSX.utils.sheet_to_json(ws); }
-          DB[type] = [...DB[type], ...data];
-          const now = new Date().toLocaleString('en-IN'); if (!DB.uploadLog) DB.uploadLog = []; DB.uploadLog.unshift({ time: now, type, file: file.name, count: data.length, status: 'Success' }); DB.uploadLog = DB.uploadLog.slice(0, 50);
-          if (!DB.gsync) DB.gsync = {}; DB.gsync.lastSync = now; saveDB(); logUpload();
-          st.textContent = `✅ ${data.length} records`; st.style.color = 'var(--green)'; showToast(`✅ ${data.length} ${type} records uploaded!`);
-          updateLastUpdate(); renderAll(); renderDW(); renderEmployees(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); if(typeof populateAdvFilterDropdowns==='function') populateAdvFilterDropdowns();
-        } catch (err) { st.textContent = '❌ ' + err.message; st.style.color = 'var(--red)'; if (!DB.uploadLog) DB.uploadLog = []; DB.uploadLog.unshift({ time: new Date().toLocaleString('en-IN'), type, file: file.name, count: 0, status: 'Failed' }); DB.uploadLog = DB.uploadLog.slice(0, 50); logUpload(); }
+        advanceUploadStep(1); // Processing step
+        setTimeout(() => {
+          try {
+            let data = [];
+            if (file.name.endsWith('.csv')) data = parseCSV(ev.target.result);
+            else { const wb = XLSX.read(ev.target.result, { type: 'array' }); const ws = wb.Sheets[wb.SheetNames[0]]; data = XLSX.utils.sheet_to_json(ws); }
+
+            advanceUploadStep(2); // Updating step
+            setTimeout(() => {
+              DB[type] = [...DB[type], ...data];
+              const now = new Date().toLocaleString('en-IN');
+              if (!DB.uploadLog) DB.uploadLog = [];
+              DB.uploadLog.unshift({ time: now, type, file: file.name, count: data.length, status: 'Success' });
+              DB.uploadLog = DB.uploadLog.slice(0, 50);
+              if (!DB.gsync) DB.gsync = {};
+              DB.gsync.lastSync = now; saveDB(); logUpload();
+              st.textContent = `✅ ${data.length} records`; st.style.color = 'var(--green)';
+              updateLastUpdate(); renderAll(); renderDW(); renderEmployees();
+              populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills();
+              populateAbbyyReasonDropdown(); populateXcReasonDropdown();
+              if (typeof populateAdvFilterDropdowns === 'function') populateAdvFilterDropdowns();
+              hideUploadLoading();
+              showUploadResult(true, type, file.name, data.length);
+            }, 350);
+          } catch (err) {
+            st.textContent = '❌ ' + err.message; st.style.color = 'var(--red)';
+            if (!DB.uploadLog) DB.uploadLog = [];
+            DB.uploadLog.unshift({ time: new Date().toLocaleString('en-IN'), type, file: file.name, count: 0, status: 'Failed' });
+            DB.uploadLog = DB.uploadLog.slice(0, 50); logUpload();
+            hideUploadLoading();
+            showUploadResult(false, type, file.name, 0, err.message);
+          }
+        }, 400);
       };
       if (file.name.endsWith('.csv')) reader.readAsText(file); else reader.readAsArrayBuffer(file);
     }
@@ -5328,7 +5823,7 @@
     function dayDate(d) { const b = new Date(); return `${b.getFullYear()}-${String(b.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; }
     async function getSheets(sid, ak) { const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sid}?fields=sheets.properties.title&key=${ak}`); if (!r.ok) throw new Error(`Metadata error ${r.status}`); const j = await r.json(); return (j.sheets || []).map(s => s.properties.title); }
     async function fetchSheet(sid, ak, name) { const range = encodeURIComponent(`'${name}'!A1:Z10000`); const r = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values/${range}?key=${ak}`); if (!r.ok) throw new Error(`Error ${r.status} tab "${name}"`); return (await r.json()).values || []; }
-    async function doSync() { const { sheetId: sid, apiKey: ak } = DB.gsync || {}; addSyncLog('🔄 Fetching...'); try { if (!sid || !ak) throw new Error('Missing credentials'); const names = await getSheets(sid, ak); const sTabs = names.filter(isSumTab), aTabs = names.filter(isAbTab), xTabs = names.filter(isXCTab), dTabs = names.filter(isDayTab).sort((a, b) => Number(a) - Number(b)); let sumR = [], abR = [], xcR = [], dwR = []; for (const t of sTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); sumR.push(...normSummary(rows)); } for (const t of aTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); abR.push(...normAbbyy(rows)); } for (const t of xTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); xcR.push(...normXC(rows)); } for (const t of dTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); dwR.push(...normSummary(rows, dayDate(Number(t)))); } DB.summary = sumR; DB.abbyy = abR; DB.xc = xcR; DB.daywise = dwR; const now = new Date().toLocaleString('en-IN'); DB.gsync.lastSync = now; saveDB(); renderAll(); renderDW(); renderEmployees(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); setGSyncOn(true); updateGSyncStatus(`Connected. Last: ${now}`); addSyncLog(`✅ Sum:${sumR.length} AB:${abR.length} XC:${xcR.length} DW:${dwR.length}`); updateLastUpdate(); } catch (e) { addSyncLog(`❌ ${e.message}`); updateGSyncStatus(`Error: ${e.message}`); setGSyncOn(false); } }
+    async function doSync() { const { sheetId: sid, apiKey: ak } = DB.gsync || {}; window.showSyncOverlay && window.showSyncOverlay('Syncing data…'); addSyncLog('🔄 Fetching...'); try { if (!sid || !ak) throw new Error('Missing credentials'); const names = await getSheets(sid, ak); const sTabs = names.filter(isSumTab), aTabs = names.filter(isAbTab), xTabs = names.filter(isXCTab), dTabs = names.filter(isDayTab).sort((a, b) => Number(a) - Number(b)); let sumR = [], abR = [], xcR = [], dwR = []; for (const t of sTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); sumR.push(...normSummary(rows)); } for (const t of aTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); abR.push(...normAbbyy(rows)); } for (const t of xTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); xcR.push(...normXC(rows)); } for (const t of dTabs) { const rows = toObjs(await fetchSheet(sid, ak, t)); dwR.push(...normSummary(rows, dayDate(Number(t)))); } DB.summary = sumR; DB.abbyy = abR; DB.xc = xcR; DB.daywise = dwR; const now = new Date().toLocaleString('en-IN'); DB.gsync.lastSync = now; saveDB(); renderAll(); renderDW(); renderEmployees(); populateAbbyyQPills(); populateXcQPills(); populateDWQF(); populatePivotPills(); populateAbbyyReasonDropdown(); populateXcReasonDropdown(); setGSyncOn(true); updateGSyncStatus(`Connected. Last: ${now}`); addSyncLog(`✅ Sum:${sumR.length} AB:${abR.length} XC:${xcR.length} DW:${dwR.length}`); updateLastUpdate(); } catch (e) { addSyncLog(`❌ ${e.message}`); updateGSyncStatus(`Error: ${e.message}`); setGSyncOn(false); } finally { window.hideSyncOverlay && window.hideSyncOverlay(); } }
     function setGSyncOn(on) { document.getElementById('gsync-dot')?.classList.toggle('on', on); document.getElementById('gsync-hdot')?.classList.toggle('live', on); const l = document.getElementById('gsync-hlabel'); if (l) l.textContent = on ? 'Live Sync' : 'Not Synced'; }
     function updateGSyncStatus(msg) { const m = document.getElementById('gsync-main'), s = document.getElementById('gsync-sub'); if (m) m.textContent = msg; if (s) s.textContent = `Sheet: ${DB.gsync?.sheetId?.substring(0, 20) || '-'}...`; }
     function disconnectGSheet() { if (!DB.gsync) DB.gsync = {}; DB.gsync.connected = false; saveDB(); setGSyncOn(false); const m = document.getElementById('gsync-main'), s = document.getElementById('gsync-sub'); if (m) m.textContent = 'Disconnected'; if (s) s.textContent = 'Enter credentials and connect'; addSyncLog('❌ Disconnected'); showToast('Disconnected'); }
@@ -5892,6 +6387,48 @@
       }, 800);
     });
   </script>
+
+<div id="sync-overlay" role="status" aria-live="polite" aria-hidden="true">
+  <div class="sync-stage">
+    <ul>
+      <li><span>S</span><span>y</span><span>n</span><span>c</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>F</span><span>e</span><span>t</span><span>c</span><span>h</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>S</span><span>h</span><span>e</span><span>e</span><span>t</span><span>s</span></li>
+      <li><span>L</span><span>o</span><span>a</span><span>d</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>P</span><span>a</span><span>r</span><span>s</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>S</span><span>u</span><span>m</span><span>m</span><span>a</span><span>r</span><span>y</span></li>
+      <li><span>A</span><span>B</span><span>B</span><span>Y</span><span>Y</span></li>
+      <li><span>X</span><span>C</span><span>e</span><span>r</span><span>r</span><span>o</span><span>r</span></li>
+      <li><span>D</span><span>a</span><span>y</span><span>w</span><span>i</span><span>s</span><span>e</span></li>
+      <li><span>S</span><span>y</span><span>n</span><span>c</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>F</span><span>e</span><span>t</span><span>c</span><span>h</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>S</span><span>h</span><span>e</span><span>e</span><span>t</span><span>s</span></li>
+      <li><span>L</span><span>o</span><span>a</span><span>d</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>P</span><span>a</span><span>r</span><span>s</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>S</span><span>u</span><span>m</span><span>m</span><span>a</span><span>r</span><span>y</span></li>
+      <li><span>A</span><span>B</span><span>B</span><span>Y</span><span>Y</span></li>
+      <li><span>X</span><span>C</span><span>e</span><span>r</span><span>r</span><span>o</span><span>r</span></li>
+      <li><span>D</span><span>a</span><span>y</span><span>w</span><span>i</span><span>s</span><span>e</span></li>
+      <li><span>S</span><span>y</span><span>n</span><span>c</span><span>i</span><span>n</span><span>g</span></li>
+      <li><span>L</span><span>o</span><span>a</span><span>d</span><span>i</span><span>n</span><span>g</span></li>
+    </ul>
+    <div class="sync-status" id="sync-overlay-status">Syncing data…</div>
+  </div>
+</div>
+<script>
+  window.showSyncOverlay = function(msg){
+    var el=document.getElementById('sync-overlay');
+    if(!el) return;
+    if(msg){ var s=document.getElementById('sync-overlay-status'); if(s) s.textContent=msg; }
+    el.classList.add('show'); el.setAttribute('aria-hidden','false');
+  };
+  window.hideSyncOverlay = function(){
+    var el=document.getElementById('sync-overlay');
+    if(!el) return;
+    el.classList.remove('show'); el.setAttribute('aria-hidden','true');
+  };
+</script>
+
 </body>
 
 </html>
