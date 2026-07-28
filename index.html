@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JB ABBYY-ERROR Dashboard v17 (Final)</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
@@ -2752,6 +2752,8 @@
               class="ni-icon">👥</span> Employee Directory</button>
           <button class="nav-item" id="nav-reports" onclick="showPage('reports',this)"><span class="ni-icon">📋</span>
             Reports</button>
+          <button class="nav-item" id="nav-nomination" onclick="showPage('nomination',this)"><span
+              class="ni-icon">🎓</span> Training Nomination<span class="ni-badge" id="nom-badge">0</span></button>
           <button class="nav-item admin-nav" id="nav-gsync" onclick="showPage('gsync',this)" style="display:none"><span
               class="ni-icon">🔗</span> Google Sheet Sync</button>
           <button class="nav-item admin-nav" id="nav-export" onclick="showPage('export',this)"
@@ -4133,6 +4135,131 @@
           </div>
         </div>
 
+        <!-- ======================== TRAINING NOMINATION PAGE ======================== -->
+        <div class="page" id="page-nomination">
+          <div class="page-title">🎓 Training Nomination</div>
+          <div class="page-sub">Operators flagged for training as per production volume &amp; error-count criteria</div>
+
+          <div class="settings-section" style="margin-bottom:12px">
+            <div class="settings-title">Nomination Criteria</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11.5px" class="nom-crit-grid">
+              <div style="background:var(--card2,var(--card));border:1px solid var(--border);border-radius:9px;padding:10px 12px">
+                <div style="font-weight:700;color:var(--purple);margin-bottom:5px">🟣 Condition 1 — Above 10,000 Production, Errors &gt; 5</div>
+                <div style="color:var(--muted);line-height:1.6">Item Code Total Mismatch • Quantity incorrect • Invoice Number Wrong • Purchase Order Wrong <span style="opacity:.75">(as per Queue criticality)</span></div>
+              </div>
+              <div style="background:var(--card2,var(--card));border:1px solid var(--border);border-radius:9px;padding:10px 12px">
+                <div style="font-weight:700;color:var(--yellow);margin-bottom:5px">🟡 Condition 2 — Below 10,000 Production, Errors &gt; 3</div>
+                <div style="color:var(--muted);line-height:1.6">Catch/Split • Purchase Order wrong/CRV • Item Code incorrect/Quantity incorrect/Item Description incorrect • Keg Deposit/Return/Bottle Deposit/Deposit • Processed as Purchase Su/Processed as Detailed Le/Wrong Processed Sales Tax/Vendor Name wrong/Extended Price incorrect • Unit Price incorrect/UOM incorrect/Pack/Size/Unit incorrect • Other Charges/Discount/Freight Charges/100% Discount • Invoice Amount wrong/Invoice Date Wrong/Invoice Number Wrong/Credit Memo • Non Invoice Image/XCG Tenant Note/Vendor Note • Field24-Due Date/Vendor note/Bad Quality/Missing data/Zero dollar invoice/100% Discount/"0" Amount line</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+            <div class="metric-card">
+              <div class="mc-label">Operators Evaluated</div>
+              <div class="mc-value mc-blue" id="nom-m-total">0</div>
+              <div class="mc-sub" id="nom-m-locs">Across all centers</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Nominated for Training</div>
+              <div class="mc-value mc-red" id="nom-m-nominated">0</div>
+              <div class="mc-sub" id="nom-m-pct">0% of operators</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Above 10K Tier</div>
+              <div class="mc-value mc-purple" id="nom-m-above">0</div>
+              <div class="mc-sub">Operators evaluated on Condition 1</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Below 10K Tier</div>
+              <div class="mc-value mc-orange" id="nom-m-below">0</div>
+              <div class="mc-sub">Operators evaluated on Condition 2</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+            <input type="text" class="filter-input" id="nom-search" placeholder="🔍 Search operator..."
+              oninput="filterNomination()" style="width:200px">
+            <select class="filter-input" id="nom-loc" onchange="filterNomination()" style="max-width:150px">
+              <option value="">All Locations</option>
+            </select>
+            <select class="filter-input" id="nom-queue" onchange="filterNomination()" style="max-width:160px">
+              <option value="">All Queues</option>
+            </select>
+            <select class="filter-input" id="nom-status" onchange="filterNomination()" style="max-width:170px">
+              <option value="">All Operators</option>
+              <option value="Yes">🎓 Nominated Only</option>
+              <option value="No">Not Nominated</option>
+            </select>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('nom-search').value='';document.getElementById('nom-loc').value='';document.getElementById('nom-queue').value='';document.getElementById('nom-status').value='';filterNomination()">✕ Reset</button>
+            <span style="flex:1"></span>
+            <button class="print-btn" onclick="printSection('nom-table','Training Nomination')">🖨️</button>
+            <button class="btn btn-green btn-sm" onclick="exportTableToExcel('nom-table','Training_Nomination')">📥 Excel</button>
+          </div>
+
+          <div class="table-card">
+            <div class="scroll-wrap">
+              <div class="table-wrap scroll-y">
+                <table id="nom-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Primary Operator</th>
+                      <th>Location</th>
+                      <th>Earnings</th>
+                      <th>Tier</th>
+                      <th>Total Errors</th>
+                      <th>Qualifying Errors</th>
+                      <th>Threshold</th>
+                      <th>Training Subject</th>
+                      <th>Nomination Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="nom-tbody">
+                    <tr>
+                      <td colspan="10" style="text-align:center;color:var(--muted);padding:20px">No data — upload ABBYY &amp; Summary data first</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0 0;flex-wrap:wrap;gap:7px">
+              <div id="nom-pi" style="font-size:11px;color:var(--muted)"></div>
+            </div>
+          </div>
+
+          <!-- ======================== TRAINING SCHEDULE (grouped, colour-coded) ======================== -->
+          <div style="margin-top:22px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+              <div class="settings-title" style="margin:0">📅 Training Schedule</div>
+              <input type="text" class="filter-input" id="sched-month" value="Jan'26" style="max-width:110px" onchange="renderTrainingSchedule()">
+              <input type="text" class="filter-input" id="sched-search" placeholder="🔍 Search operator..." oninput="renderTrainingSchedule()" style="max-width:180px">
+              <select class="filter-input" id="sched-loc" onchange="renderTrainingSchedule()" style="max-width:170px">
+                <option value="">All Locations</option>
+              </select>
+              <select class="filter-input" id="sched-sort" onchange="renderTrainingSchedule()" style="max-width:170px">
+                <option value="subject">Group by Subject</option>
+                <option value="az">Operator Name (A → Z)</option>
+                <option value="za">Operator Name (Z → A)</option>
+              </select>
+              <button class="btn btn-outline btn-sm" onclick="resetScheduleFilters()">✕ Reset</button>
+              <span style="flex:1"></span>
+              <button class="btn btn-green btn-sm" onclick="downloadTrainingSchedule()">📥 Download Training Schedule (Excel)</button>
+            </div>
+            <div id="sched-loc-pills" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+            <div class="table-card">
+              <div class="scroll-wrap">
+                <div class="table-wrap scroll-y">
+                  <table id="sched-table" style="min-width:520px">
+                    <thead id="sched-thead"></thead>
+                    <tbody id="sched-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ======================== GSYNC PAGE ======================== -->
         <div class="page" id="page-gsync">
           <div class="page-title">Google Sheet Live Sync <span class="admin-badge">Admin Only</span></div>
@@ -4447,6 +4574,7 @@
       if (name === 'centerwise') renderCW();
       if (name === 'abbyy') { abbyyPage = 1; renderAbbyy(); renderAbbyyPivot(); renderAbbyyPrimaryPivot(); populateEAReasonDropdown(); renderEATable(); }
       if (name === 'xc') { xcPage = 1; renderXC(); }
+      if (name === 'nomination') { renderNomination(); }
     }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
     function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
@@ -5620,6 +5748,273 @@
     let empData = [], empMax = 1;
     function setEmpPage(p) { empPage = p; renderEmpPaged(); }
     function clearEmpSearch() { document.getElementById('emp-search').value = ''; const ov = document.getElementById('emp-op-overview'); if (ov) { ov.style.display = 'none'; ov.innerHTML = ''; } filterEmployees(); }
+    /* ======================== TRAINING NOMINATION ======================== */
+    let nomDataCache = [];
+    function trainingCriteria() {
+      return {
+        threshA: 5,
+        threshB: 3,
+        listA: ['item code', 'total mismatch', 'quantity incorrect', 'invoice number wrong', 'purchase order wrong'],
+        listB: ['catch', 'split', 'purchase order wrong', 'crv', 'item code incorrect', 'quantity incorrect', 'item description incorre',
+          'keg deposit', 'return', 'bottle deposite', 'bottle deposit', 'deposite', 'deposit',
+          'processed as purchase su', 'processed as detailed le', 'wrong processed', 'sales tax', 'vendor name wrong',
+          'extended price incorrect', 'unit price incorrect', 'uom incorrect', 'pack', 'size', 'unit incorrec',
+          'other charges', 'discount', 'freight charges', '100% discount',
+          'invoice amount wrong', 'invoice date wrong', 'invoice number wrong', 'credit memo',
+          'non invoice image', 'xcg', 'tenant note', 'vendor note', 'field24', 'due date', 'bad quality',
+          'missing data', 'zero dollar invoice', '0" amount line', '"0" amount line', '0 amount line']
+      };
+    }
+    function nomMatches(reason, list) { const r = String(reason || '').toLowerCase(); return list.some(k => r.includes(k)); }
+    function trainingSubjectGroups() {
+      return [
+        { name: 'Catch/ Split', keys: ['catch', 'split'] },
+        { name: 'Field24 - Due Date / Vendor note/ Bad Quality / Missing data/ Zero dollar invoice/ 100% Discount/ "0" Amount line', keys: ['field24', 'vendor note', 'bad quality', 'missing data', 'zero dollar invoice', 'due date', '100% discount', '0" amount line', '"0" amount line', '0 amount line'] },
+        { name: 'Invoice Amount wrong / Invoice Date Wrong / Invoice Number Wrong / Credit Memo', keys: ['invoice amount wrong', 'invoice date wrong', 'invoice number wrong', 'credit memo'] },
+        { name: 'Item Code incorrect/Quantity incorrect/Item Description incorre', keys: ['item code incorrect', 'quantity incorrect', 'item description incorre'] },
+        { name: 'Keg Deposit / Return /Bottle Deposite / Deposite', keys: ['keg deposit', 'return', 'bottle deposite', 'bottle deposit', 'deposite', 'deposit'] },
+        { name: 'Other Charges / Discount / Freight Charges/ 100% Discount', keys: ['other charges', 'discount', 'freight charges', '100% discount'] },
+        { name: 'Purchase Order wrong/ Due Date / CRV', keys: ['purchase order wrong', 'due date', 'crv'] }
+      ];
+    }
+    function subjectForReason(reason) {
+      const groups = trainingSubjectGroups();
+      const found = groups.find(g => nomMatches(reason, g.keys));
+      return found ? found.name : '';
+    }
+    function computeTrainingNomination() {
+      const crit = trainingCriteria();
+      const { data: prodSrc } = getSrc();
+      const opMap = {};
+      DB.abbyy.forEach(r => {
+        const op = String(r['Primary Operator'] || '').trim();
+        if (!op || op === '—') return;
+        if (!opMap[op]) opMap[op] = { errors: [], locations: [], queues: [] };
+        opMap[op].errors.push(r);
+        if (r['Location']) opMap[op].locations.push(r['Location']);
+      });
+      prodSrc.forEach(r => {
+        const nm = String(r['User Name'] || '').trim();
+        if (!nm) return;
+        let key = Object.keys(opMap).find(k => sameName(k, nm));
+        if (!key) { key = nm; opMap[key] = { errors: [], locations: [], queues: [] }; }
+        if (r['Location']) opMap[key].locations.push(r['Location']);
+        if (r['Operation Queue']) opMap[key].queues.push(r['Operation Queue']);
+      });
+      const rows = [];
+      Object.keys(opMap).sort().forEach(op => {
+        const g = opMap[op];
+        const prodRows = prodSrc.filter(r => sameName(r['User Name'], op));
+        const production = prodRows.reduce((s, r) => s + (parseFloat(r['Total Count']) || 0), 0);
+        const location = g.locations[0] || (prodRows[0] && prodRows[0]['Location']) || '—';
+        const queueList = [...new Set((g.queues.length ? g.queues : prodRows.map(r => r['Operation Queue'])).filter(Boolean))];
+        const queue = queueList.join(', ') || '—';
+        const earnings = prodRows.reduce((s, r) => s + (parseFloat(r['Total Earnings']) || 0), 0);
+        const custErrRows = DB.summary.filter(r => sameName(r['User Name'], op));
+        const customerErrors = custErrRows.reduce((s, r) => s + (parseFloat(r['Customer Error']) || 0), 0);
+        const totalErrors = g.errors.length;
+        const isAbove = production > 10000;
+        const matchedList = isAbove ? crit.listA : crit.listB;
+        const threshold = isAbove ? crit.threshA : crit.threshB;
+        const qualifyRows = g.errors.filter(r => nomMatches(r['Error Reason'], matchedList));
+        const qualifyErrors = qualifyRows.length;
+        const nominated = qualifyErrors > threshold;
+        let subjects = [...new Set(qualifyRows.map(r => subjectForReason(r['Error Reason'])).filter(Boolean))];
+        if (customerErrors > 0) subjects.push('CUSTOMER ERRORS');
+        const trainingSubject = nominated ? (subjects.join('; ') || '—') : '—';
+        rows.push({ operator: op, earnings, location, queue, production, tier: isAbove ? 'Above 10K' : 'Below 10K', totalErrors, qualifyErrors, threshold, trainingSubject, nominated: nominated ? 'Yes' : 'No' });
+      });
+      rows.sort((a, b) => b.qualifyErrors - a.qualifyErrors || b.production - a.production);
+      return rows;
+    }
+    function populateNomFilters() {
+      const locs = [...new Set(nomDataCache.map(r => r.location).filter(Boolean))].sort();
+      const queues = [...new Set(nomDataCache.flatMap(r => r.queue.split(',').map(q => q.trim())).filter(Boolean))].sort();
+      const lc = document.getElementById('nom-loc'), qc = document.getElementById('nom-queue');
+      const curL = lc.value, curQ = qc.value;
+      lc.innerHTML = '<option value="">All Locations</option>' + locs.map(l => `<option${l === curL ? ' selected' : ''}>${esc(l)}</option>`).join('');
+      qc.innerHTML = '<option value="">All Queues</option>' + queues.map(q => `<option${q === curQ ? ' selected' : ''}>${esc(q)}</option>`).join('');
+    }
+    function renderNomination() {
+      nomDataCache = computeTrainingNomination();
+      populateNomFilters();
+      const badge = document.getElementById('nom-badge');
+      if (badge) badge.textContent = nomDataCache.filter(r => r.nominated === 'Yes').length;
+      filterNomination();
+    }
+    function renderNomKpis(rows) {
+      const total = rows.length;
+      const nominated = rows.filter(r => r.nominated === 'Yes').length;
+      const above = rows.filter(r => r.tier === 'Above 10K').length;
+      const below = rows.filter(r => r.tier === 'Below 10K').length;
+      const locCount = new Set(rows.map(r => r.location).filter(Boolean)).size;
+      document.getElementById('nom-m-total').textContent = total;
+      document.getElementById('nom-m-nominated').textContent = nominated;
+      document.getElementById('nom-m-pct').textContent = (total ? ((nominated / total) * 100).toFixed(1) : 0) + '% of operators';
+      document.getElementById('nom-m-above').textContent = above;
+      document.getElementById('nom-m-below').textContent = below;
+      const locEl = document.getElementById('nom-m-locs');
+      if (locEl) locEl.textContent = locCount ? `Across ${locCount} center${locCount > 1 ? 's' : ''}` : 'Across all centers';
+    }
+    function filterNomination() {
+      const q = (document.getElementById('nom-search').value || '').toLowerCase();
+      const loc = document.getElementById('nom-loc').value;
+      const que = document.getElementById('nom-queue').value;
+      const st = document.getElementById('nom-status').value;
+      const rows = nomDataCache.filter(r => {
+        const mQ = !q || r.operator.toLowerCase().includes(q);
+        const mL = !loc || r.location === loc;
+        const mQu = !que || r.queue.includes(que);
+        const mS = !st || r.nominated === st;
+        return mQ && mL && mQu && mS;
+      });
+      const tbody = document.getElementById('nom-tbody');
+      if (!rows.length) { tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">No matching operators</td></tr>`; document.getElementById('nom-pi').textContent = ''; renderNomKpis(rows); renderTrainingSchedule(); return; }
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td style="font-weight:600">${esc(r.operator)}</td>
+          <td>${cBadge(r.location)}</td>
+          <td>${fmtMoney(r.earnings)}</td>
+          <td><span class="badge ${r.tier === 'Above 10K' ? 'badge-purple' : 'badge-yellow'}">${r.tier}</span></td>
+          <td>${r.totalErrors}</td>
+          <td>${r.qualifyErrors} <span style="color:var(--muted);font-size:10.5px">(need &gt; ${r.threshold})</span></td>
+          <td>&gt; ${r.threshold}</td>
+          <td style="white-space:normal;max-width:260px;font-size:11px">${esc(r.trainingSubject)}</td>
+          <td><span class="badge ${r.nominated === 'Yes' ? 'badge-red' : 'badge-blue'}">${r.nominated === 'Yes' ? '🎓 Nominated' : 'Not Nominated'}</span></td>
+        </tr>`).join('') + (() => {
+        const sumEarnings = rows.reduce((s, r) => s + (r.earnings || 0), 0);
+        const sumErrors = rows.reduce((s, r) => s + (r.totalErrors || 0), 0);
+        const sumQualify = rows.reduce((s, r) => s + (r.qualifyErrors || 0), 0);
+        const nomCount = rows.filter(r => r.nominated === 'Yes').length;
+        return `<tr style="font-weight:800;background:var(--card2,var(--card))">
+          <td colspan="3" style="text-align:right">Grand Total</td>
+          <td>${fmtMoney(sumEarnings)}</td>
+          <td></td>
+          <td>${sumErrors}</td>
+          <td>${sumQualify}</td>
+          <td></td>
+          <td></td>
+          <td>${nomCount} Nominated</td>
+        </tr>`;
+      })();
+      document.getElementById('nom-pi').textContent = `${rows.length} of ${nomDataCache.length} operators`;
+      renderNomKpis(rows);
+      renderTrainingSchedule();
+    }
+
+    /* ---- Training Schedule: grouped by subject, colour-coded (matches Training Schedule sheet format) ---- */
+    const SCHED_GROUP_COLORS = ['F2D7D9', 'D9BBD4', 'F2D7D9', 'D9BBD4', 'F2D7D9', 'D9BBD4', 'F2D7D9', 'D9BBD4'];
+    function buildScheduleRows() {
+      const groupOrder = trainingSubjectGroups().map(g => g.name).concat(['CUSTOMER ERRORS']);
+      const out = [];
+      nomDataCache.filter(r => r.nominated === 'Yes').forEach(r => {
+        const subs = (r.trainingSubject || '').split(';').map(s => s.trim()).filter(Boolean);
+        subs.forEach(s => out.push({ subject: s, operator: r.operator, location: r.location }));
+      });
+      out.sort((a, b) => {
+        const ia = groupOrder.indexOf(a.subject), ib = groupOrder.indexOf(b.subject);
+        if (ia !== ib) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+        return a.operator.localeCompare(b.operator);
+      });
+      return out;
+    }
+    function populateSchedLocFilter() {
+      const locs = [...new Set(buildScheduleRows().map(r => r.location).filter(Boolean))].sort();
+      const sel = document.getElementById('sched-loc');
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">All Locations</option>' + locs.map(l => `<option${l === cur ? ' selected' : ''}>${esc(l)}</option>`).join('');
+      const pillWrap = document.getElementById('sched-loc-pills');
+      const active = cur;
+      pillWrap.innerHTML = `<button class="qpill${!active ? ' active' : ''}" onclick="setSchedLoc('')">🌐 All (${buildScheduleRows().length})</button>` +
+        locs.map(l => {
+          const cnt = buildScheduleRows().filter(r => r.location === l).length;
+          return `<button class="qpill${active === l ? ' active' : ''}" onclick="setSchedLoc(${JSON.stringify(l)})">${esc(l)} (${cnt})</button>`;
+        }).join('');
+    }
+    function setSchedLoc(loc) { document.getElementById('sched-loc').value = loc; renderTrainingSchedule(); }
+    function resetScheduleFilters() {
+      document.getElementById('sched-search').value = '';
+      document.getElementById('sched-loc').value = '';
+      document.getElementById('sched-sort').value = 'subject';
+      renderTrainingSchedule();
+    }
+    function getFilteredScheduleRows() {
+      const q = (document.getElementById('sched-search').value || '').toLowerCase();
+      const loc = document.getElementById('sched-loc').value;
+      const sort = document.getElementById('sched-sort').value;
+      let rows = buildScheduleRows().filter(r => (!q || r.operator.toLowerCase().includes(q)) && (!loc || r.location === loc));
+      if (sort === 'az') rows = [...rows].sort((a, b) => a.operator.localeCompare(b.operator));
+      else if (sort === 'za') rows = [...rows].sort((a, b) => b.operator.localeCompare(a.operator));
+      return rows;
+    }
+    function renderTrainingSchedule() {
+      populateSchedLocFilter();
+      const rows = getFilteredScheduleRows();
+      const month = document.getElementById('sched-month').value || 'Jan\'26';
+      const thead = document.getElementById('sched-thead');
+      const tbody = document.getElementById('sched-tbody');
+      thead.innerHTML = `
+        <tr><th colspan="3" style="background:#FFFF00;color:#000;text-align:center">Training Schedule ${esc(month)}</th></tr>
+        <tr>
+          <th style="background:#BDD7EE;color:#000">Training Subject</th>
+          <th style="background:#FCE4D6;color:#000">Operator Name</th>
+          <th style="background:#FCE4D6;color:#000">Location</th>
+        </tr>`;
+      if (!rows.length) { tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">No nominated operators yet</td></tr>`; return; }
+      const groupOrder = trainingSubjectGroups().map(g => g.name).concat(['CUSTOMER ERRORS']);
+      tbody.innerHTML = rows.map(r => {
+        const gi = groupOrder.indexOf(r.subject);
+        const color = SCHED_GROUP_COLORS[(gi === -1 ? groupOrder.length : gi) % SCHED_GROUP_COLORS.length];
+        return `<tr style="background:#${color}">
+          <td style="color:#000;font-weight:600">${esc(r.subject)}</td>
+          <td style="color:#000;text-align:center">${esc(r.operator)}</td>
+          <td style="color:#000;text-align:center">${esc(r.location)}</td>
+        </tr>`;
+      }).join('') + `<tr style="background:#FFFF00;font-weight:800">
+          <td colspan="2" style="color:#000;text-align:right">Grand Total</td>
+          <td style="color:#000;text-align:center">${rows.length}</td>
+        </tr>`;
+    }
+    function downloadTrainingSchedule() {
+      const rows = getFilteredScheduleRows();
+      if (!rows.length) { showToast('⚠️ No nominated operators to export'); return; }
+      const month = document.getElementById('sched-month').value || 'Jan\'26';
+      const groupOrder = trainingSubjectGroups().map(g => g.name).concat(['CUSTOMER ERRORS']);
+      const yellow = { fill: { fgColor: { rgb: 'FFFF00' } }, font: { bold: true, color: { rgb: '000000' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+      const hdrBlue = { fill: { fgColor: { rgb: 'BDD7EE' } }, font: { bold: true, color: { rgb: '000000' } }, alignment: { horizontal: 'center' } };
+      const hdrOrange = { fill: { fgColor: { rgb: 'FCE4D6' } }, font: { bold: true, color: { rgb: '000000' } }, alignment: { horizontal: 'center' } };
+      const aoa = [
+        [`Training Schedule ${month}`, '', ''],
+        ['Training Subject', 'Operator Name', 'Location']
+      ];
+      rows.forEach(r => aoa.push([r.subject, r.operator, r.location]));
+      const gtRow = aoa.length;
+      aoa.push(['Grand Total', '', rows.length]);
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }, { s: { r: gtRow, c: 0 }, e: { r: gtRow, c: 1 } }];
+      ws['!cols'] = [{ wch: 62 }, { wch: 26 }, { wch: 22 }];
+      ws['A1'].s = yellow; ws['B1'] = ws['B1'] || { t: 's', v: '' }; ws['B1'].s = yellow; ws['C1'] = ws['C1'] || { t: 's', v: '' }; ws['C1'].s = yellow;
+      ws['A2'].s = hdrBlue; ws['B2'].s = hdrOrange; ws['C2'].s = hdrOrange;
+      rows.forEach((r, i) => {
+        const gi = groupOrder.indexOf(r.subject);
+        const color = SCHED_GROUP_COLORS[(gi === -1 ? groupOrder.length : gi) % SCHED_GROUP_COLORS.length];
+        const style = { fill: { fgColor: { rgb: color } }, font: { color: { rgb: '000000' } }, alignment: { vertical: 'center' } };
+        const rIdx = i + 3;
+        ['A', 'B', 'C'].forEach(col => { const addr = col + rIdx; if (ws[addr]) ws[addr].s = style; });
+      });
+      const gtStyle = { fill: { fgColor: { rgb: 'FFFF00' } }, font: { bold: true, color: { rgb: '000000' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+      const gtStyleRight = { fill: { fgColor: { rgb: 'FFFF00' } }, font: { bold: true, color: { rgb: '000000' } }, alignment: { horizontal: 'right', vertical: 'center' } };
+      const gtExcelRow = gtRow + 1;
+      ws['A' + gtExcelRow].s = gtStyleRight;
+      ws['B' + gtExcelRow] = ws['B' + gtExcelRow] || { t: 's', v: '' }; ws['B' + gtExcelRow].s = gtStyle;
+      ws['C' + gtExcelRow].s = gtStyle;
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Training Schedule');
+      XLSX.writeFile(wb, `Training_Schedule_${month.replace(/[^a-z0-9]/gi, '_')}.xlsx`);
+      showToast('📥 Training Schedule downloaded!');
+    }
+
     function filterEmployees() { empPage = 1; renderEmployees(); }
     function renderEmployees() {
       const s = document.getElementById('emp-search')?.value?.toLowerCase() || ''; const sR = document.getElementById('emp-search')?.value || ''; const cf = document.getElementById('emp-cf')?.value || ''; const qf = document.getElementById('emp-qf')?.value || '';
@@ -5899,7 +6294,7 @@
     function toggleNight() { toggleDark(document.documentElement.getAttribute('data-theme') !== 'dark'); }
     function loadSettings() { if (DB.settings.dark) toggleDark(true); }
     function triggerSync() { const icon = document.getElementById('sync-icon'); icon.classList.add('spin'); setTimeout(() => { icon.classList.remove('spin'); renderAll(); renderDW(); renderEmployees(); updateLastUpdate(); showToast('✅ Refreshed!'); }, 700); }
-    function updateBadges() { document.getElementById('abbyy-badge').textContent = DB.abbyy.length; document.getElementById('xc-badge').textContent = DB.xc.length; }
+    function updateBadges() { document.getElementById('abbyy-badge').textContent = DB.abbyy.length; document.getElementById('xc-badge').textContent = DB.xc.length; const nb = document.getElementById('nom-badge'); if (nb) { try { nb.textContent = computeTrainingNomination().filter(r => r.nominated === 'Yes').length; } catch (e) { } } }
     function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
     function showModal(title, body, onConfirm) { document.getElementById('modal-title').textContent = title; document.getElementById('modal-body').textContent = body; document.getElementById('modal-confirm-btn').onclick = () => { onConfirm(); closeModal(); }; document.getElementById('modal-confirm').classList.add('show'); }
     function closeModal() { document.getElementById('modal-confirm').classList.remove('show'); }
