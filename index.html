@@ -3932,6 +3932,66 @@
               </div>
             </div>
           </div>
+
+          <!-- ======================== DW ID × QUEUE × CENTER — DAY-WISE ERROR COUNT TABLE ======================== -->
+          <div class="table-card" style="margin-top:14px" id="dw-daycount-card">
+            <div class="table-header">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">📆 Queue × Center — Day-wise Error Count</div>
+                <span class="cnt-badge" id="dw-dc-badge" style="background:var(--orange-light);color:var(--orange);border-color:var(--orange)">0</span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button class="btn btn-outline btn-sm" onclick="exportTableToExcel('dw-daycount-table','DayWise_ErrorCount')">📥 Excel</button>
+                <button class="print-btn" onclick="printSection('dw-daycount-table','Day-wise Error Count')">🖨️</button>
+              </div>
+            </div>
+
+            <!-- FILTERS -->
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;padding:10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+              <input type="text" class="filter-input" id="dw-dc-search" placeholder="🔍 Search queue / center..." oninput="renderDWDayCount()" style="width:190px">
+
+              <select class="filter-input" id="dw-dc-loc" onchange="renderDWDayCount()" style="max-width:160px">
+                <option value="">📍 All Locations</option>
+                <option>Ahmedabad</option>
+                <option>Karjan</option>
+                <option>Vadodara</option>
+                <option>Vadodara-WFH</option>
+                <option>Mangalore</option>
+                <option>Chennai</option>
+              </select>
+
+              <select class="filter-input" id="dw-dc-qf" onchange="renderDWDayCount()" style="max-width:160px">
+                <option value="">🗂 All Queues</option>
+              </select>
+
+              <div class="date-range-grp"><span>From:</span><input type="date" class="filter-input" id="dw-dc-from"
+                  onchange="renderDWDayCount()" style="max-width:130px"><span>To:</span><input type="date" class="filter-input"
+                  id="dw-dc-to" onchange="renderDWDayCount()" style="max-width:130px"></div>
+
+              <!-- Operator multi-select checkbox filter -->
+              <div style="position:relative">
+                <button type="button" class="btn btn-outline btn-sm" id="dw-dc-op-btn" onclick="toggleDWDCOpPanel(event)">🧑 Operators <span id="dw-dc-op-lbl">(All)</span> ▾</button>
+                <div id="dw-dc-op-panel" style="display:none;position:absolute;top:110%;left:0;z-index:60;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);padding:8px;min-width:210px;max-height:300px;overflow-y:auto">
+                  <input type="text" id="dw-dc-op-search" class="filter-input" placeholder="🔍 Search operator..." oninput="filterDWDCOpList(this.value)" onclick="event.stopPropagation()" style="width:100%;margin-bottom:6px;box-sizing:border-box">
+                  <label style="display:flex;gap:6px;align-items:center;font-size:11px;font-weight:700;padding:4px 6px;border-bottom:1px solid var(--border);margin-bottom:4px;cursor:pointer">
+                    <input type="checkbox" id="dw-dc-op-all" checked onchange="toggleDWDCAllOps(this)"> All Op
+                  </label>
+                  <div id="dw-dc-op-list" style="display:flex;flex-direction:column;gap:2px"></div>
+                </div>
+              </div>
+
+              <button class="btn btn-outline btn-sm" onclick="document.getElementById('dw-dc-search').value='';document.getElementById('dw-dc-loc').value='';document.getElementById('dw-dc-qf').value='';document.getElementById('dw-dc-from').value='';document.getElementById('dw-dc-to').value='';resetDWDCOps();renderDWDayCount()">✕ Reset</button>
+            </div>
+
+            <div class="scroll-wrap">
+              <div class="table-wrap scroll-y" style="overflow-x:auto">
+                <table id="dw-daycount-table" class="pivot-tbl" style="border-collapse:collapse;width:100%">
+                  <thead id="dw-dc-thead"></thead>
+                  <tbody id="dw-dc-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- ======================== CENTER-WISE PAGE (unchanged) ======================== -->
@@ -6935,6 +6995,193 @@
 
     window.renderDWLocQueuePivot = renderDWLocQueuePivot;
   </script>
+  <script>
+    // ============================================================
+    // DAY-WISE: OPERATOR × QUEUE × CENTER — DAY-WISE ERROR COUNT TABLE
+    // Rows = Id / Operator / Queue / Center, Columns = each date, Value = Total Count
+    // ============================================================
+
+    let dwDcSelectedOps = null; // null = All Operators selected
+
+    function _dwPopulateDayCountQueueDropdown(src) {
+      const sel = document.getElementById('dw-dc-qf');
+      if (!sel) return;
+      const cur = sel.value;
+      const qs = [...new Set((src || DB.daywise || []).map(r => r['Operation Queue'] || '').filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">🗂 All Queues</option>' + qs.map(q => `<option${q === cur ? ' selected' : ''}>${esc(q)}</option>`).join('');
+    }
+
+    function _dwPopulateDayCountOpList() {
+      const list = document.getElementById('dw-dc-op-list');
+      if (!list) return;
+      const ops = [...new Set((DB.daywise || []).map(r => r['User Name'] || '').filter(Boolean))].sort();
+      list.innerHTML = ops.map(op => {
+        const checked = dwDcSelectedOps === null || dwDcSelectedOps.has(op);
+        return `<label data-op="${esc(op.toLowerCase())}" style="display:flex;gap:6px;align-items:center;font-size:11px;padding:3px 6px;border-radius:5px;cursor:pointer" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          <input type="checkbox" value="${esc(op)}" ${checked ? 'checked' : ''} onchange="onDWDCOpCheck(this)"> ${esc(op)}
+        </label>`;
+      }).join('') || '<div style="font-size:11px;color:var(--muted);padding:4px 6px">No operators yet</div>';
+      _dwUpdateOpBtnLabel(ops.length);
+      const searchBox = document.getElementById('dw-dc-op-search');
+      if (searchBox) searchBox.value = '';
+    }
+
+    function filterDWDCOpList(q) {
+      const v = (q || '').toLowerCase().trim();
+      document.querySelectorAll('#dw-dc-op-list label[data-op]').forEach(lbl => {
+        lbl.style.display = lbl.getAttribute('data-op').includes(v) ? 'flex' : 'none';
+      });
+    }
+
+    function _dwUpdateOpBtnLabel(totalOps) {
+      const lbl = document.getElementById('dw-dc-op-lbl');
+      const allBox = document.getElementById('dw-dc-op-all');
+      if (!lbl) return;
+      if (dwDcSelectedOps === null) { lbl.textContent = '(All)'; if (allBox) allBox.checked = true; }
+      else { lbl.textContent = `(${dwDcSelectedOps.size} selected)`; if (allBox) allBox.checked = dwDcSelectedOps.size === (totalOps || 0) && totalOps > 0; }
+    }
+
+    function toggleDWDCOpPanel(e) {
+      if (e) e.stopPropagation();
+      const panel = document.getElementById('dw-dc-op-panel');
+      if (!panel) return;
+      const willShow = panel.style.display === 'none';
+      if (willShow) _dwPopulateDayCountOpList();
+      panel.style.display = willShow ? 'block' : 'none';
+    }
+
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('dw-dc-op-panel');
+      const btn = document.getElementById('dw-dc-op-btn');
+      if (!panel || panel.style.display === 'none') return;
+      if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+      panel.style.display = 'none';
+    });
+
+    function toggleDWDCAllOps(el) {
+      dwDcSelectedOps = el.checked ? null : new Set();
+      _dwPopulateDayCountOpList();
+      renderDWDayCount();
+    }
+
+    function onDWDCOpCheck(el) {
+      const ops = [...new Set((DB.daywise || []).map(r => r['User Name'] || '').filter(Boolean))];
+      if (dwDcSelectedOps === null) dwDcSelectedOps = new Set(ops); // was "All" → materialize full set
+      if (el.checked) dwDcSelectedOps.add(el.value); else dwDcSelectedOps.delete(el.value);
+      if (dwDcSelectedOps.size === ops.length) dwDcSelectedOps = null; // back to "All"
+      _dwUpdateOpBtnLabel(ops.length);
+      const allBox = document.getElementById('dw-dc-op-all');
+      if (allBox) allBox.checked = dwDcSelectedOps === null;
+      renderDWDayCount();
+    }
+
+    function resetDWDCOps() {
+      dwDcSelectedOps = null;
+      _dwPopulateDayCountOpList();
+    }
+
+    function renderDWDayCount() {
+      const thead = document.getElementById('dw-dc-thead');
+      const tbody = document.getElementById('dw-dc-tbody');
+      const badge = document.getElementById('dw-dc-badge');
+      if (!thead || !tbody) return;
+
+      const searchV = (document.getElementById('dw-dc-search')?.value || '').toLowerCase().trim();
+      const locF = document.getElementById('dw-dc-loc')?.value || '';
+      const qfF = document.getElementById('dw-dc-qf')?.value || '';
+      const frF = document.getElementById('dw-dc-from')?.value || '';
+      const toF = document.getElementById('dw-dc-to')?.value || '';
+
+      let src = [...(DB.daywise || [])];
+
+      _dwPopulateDayCountQueueDropdown(src);
+
+      if (locF) src = src.filter(r => (r['Location'] || '') === locF);
+      if (qfF) src = src.filter(r => (r['Operation Queue'] || '') === qfF);
+      if (frF) src = src.filter(r => (r['Date'] || '') >= frF);
+      if (toF) src = src.filter(r => (r['Date'] || '') <= toF);
+      if (dwDcSelectedOps !== null) src = src.filter(r => dwDcSelectedOps.has(r['User Name'] || ''));
+      if (searchV) src = src.filter(r => (r['Operation Queue'] || '').toLowerCase().includes(searchV) || (r['Location'] || '').toLowerCase().includes(searchV) || (r['User Name'] || '').toLowerCase().includes(searchV));
+
+      if (!src.length) {
+        thead.innerHTML = `<tr><th style="text-align:center;color:var(--muted);padding:18px">No data — upload Day-wise sheet or adjust filters above</th></tr>`;
+        tbody.innerHTML = '';
+        if (badge) badge.textContent = '0';
+        return;
+      }
+
+      // Distinct sorted dates → columns
+      const allDates = [...new Set(src.map(r => r['Date']).filter(Boolean))].sort();
+
+      // Group rows by Operator + Queue + Center
+      const groups = {};
+      src.forEach(r => {
+        const op = r['User Name'] || '—';
+        const q = r['Operation Queue'] || '—';
+        const c = r['Location'] || '—';
+        const key = op + '||' + q + '||' + c;
+        if (!groups[key]) groups[key] = { op, queue: q, center: c, byDate: {}, total: 0 };
+        const dt = r['Date'] || '—';
+        const cnt = +r['Total Count'] || 0;
+        groups[key].byDate[dt] = (groups[key].byDate[dt] || 0) + cnt;
+        groups[key].total += cnt;
+      });
+
+      const rows = Object.values(groups).sort((a, b) => a.op.localeCompare(b.op) || a.queue.localeCompare(b.queue) || a.center.localeCompare(b.center));
+
+      if (badge) badge.textContent = rows.length + ' row(s)';
+
+      // Header
+      let h = '<tr><th>Id</th><th>Operator</th><th>Queue</th><th>Center</th>';
+      allDates.forEach(dt => { h += `<th>${esc(dt)}</th>`; });
+      h += '<th class="pivot-total-col">Total</th></tr>';
+      thead.innerHTML = h;
+
+      // Body
+      let b = '';
+      const dayTotals = {}; let grandTotal = 0;
+      rows.forEach((r, i) => {
+        b += `<tr><td>${i + 1}</td><td class="td-bold">${esc(r.op)}</td><td>${esc(r.queue)}</td><td>${cBadge(r.center)}</td>`;
+        allDates.forEach(dt => {
+          const v = r.byDate[dt] || 0;
+          dayTotals[dt] = (dayTotals[dt] || 0) + v;
+          b += `<td style="font-family:'Space Mono',monospace">${v ? v.toLocaleString() : '—'}</td>`;
+        });
+        grandTotal += r.total;
+        b += `<td class="pivot-total-col"><strong>${r.total.toLocaleString()}</strong></td></tr>`;
+      });
+
+      // Grand total row
+      b += `<tr class="dw-grand-total-row"><td colspan="4"><strong>🏆 Grand Total — ${rows.length} row(s)</strong></td>`;
+      allDates.forEach(dt => { b += `<td><strong>${(dayTotals[dt] || 0).toLocaleString()}</strong></td>`; });
+      b += `<td class="pivot-total-col"><strong>${grandTotal.toLocaleString()}</strong></td></tr>`;
+
+      tbody.innerHTML = b;
+    }
+
+    window.renderDWDayCount = renderDWDayCount;
+    window.toggleDWDCOpPanel = toggleDWDCOpPanel;
+    window.toggleDWDCAllOps = toggleDWDCAllOps;
+    window.onDWDCOpCheck = onDWDCOpCheck;
+    window.resetDWDCOps = resetDWDCOps;
+    window.filterDWDCOpList = filterDWDCOpList;
+
+    // Hook into showPage / filterDW so this table refreshes with the rest of the Day-wise page
+    const _dwOrigShowPage3 = window.showPage;
+    window.showPage = function(name, btn) {
+      _dwOrigShowPage3(name, btn);
+      if (name === 'daywise') setTimeout(renderDWDayCount, 80);
+    };
+
+    const _dwOrigFilterDW3 = typeof filterDW === 'function' ? filterDW : null;
+    if (_dwOrigFilterDW3) {
+      window.filterDW = function() {
+        _dwOrigFilterDW3();
+        setTimeout(renderDWDayCount, 80);
+      };
+    }
+  </script>
+
   <script>
     // ============================================================
     // ABBYY ERROR ANALYSIS PAGE — Location × Error Reason Pivot
