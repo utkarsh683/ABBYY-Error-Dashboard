@@ -2833,6 +2833,8 @@
           <div class="sidebar-label">Analysis</div>
           <button class="nav-item" id="nav-employees" onclick="showPage('employees',this)"><span
               class="ni-icon">👥</span> Employee Directory</button>
+          <button class="nav-item" id="nav-topabbyy" onclick="showPage('topabbyy',this)"><span
+              class="ni-icon">🔴</span> Top ABBYY Error Operators</button>
           <button class="nav-item" id="nav-reports" onclick="showPage('reports',this)"><span class="ni-icon">📋</span>
             Reports</button>
           <button class="nav-item" id="nav-nomination" onclick="showPage('nomination',this)"><span
@@ -4114,6 +4116,112 @@
           </div>
         </div>
 
+        <!-- ======================== TOP ABBYY ERROR OPERATORS PAGE (FULL DATA) ======================== -->
+        <div class="page" id="page-topabbyy">
+          <div class="page-title">🔴 Top ABBYY Error Operators</div>
+          <div class="page-sub">Full operator-wise breakdown — line count, earnings, and error contribution</div>
+
+          <!-- Section 1: Highest Total Line Count + Earnings -->
+          <div class="table-card" style="margin-bottom:14px" id="topabbyy-prod-card">
+            <div class="table-header">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">🟢 Top 10 Performers — Highest Total Line Count + Earnings <span style="color:var(--muted);font-weight:600">(FULL DATA)</span></div>
+                <span class="cnt-badge" id="topabbyy-prod-badge" style="background:var(--green-light);color:var(--green);border-color:var(--green)">0</span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <input type="text" class="filter-input" id="topabbyy-prod-search" placeholder="🔍 Search operator..." oninput="renderTopAbbyyFull()" style="width:170px">
+                <select class="filter-input" id="topabbyy-prod-loc" onchange="renderTopAbbyyFull()" style="max-width:150px">
+                  <option value="">📍 All Locations</option>
+                  <option>Ahmedabad</option>
+                  <option>Karjan</option>
+                  <option>Vadodara</option>
+                  <option>Vadodara-WFH</option>
+                  <option>Mangalore</option>
+                  <option>Chennai</option>
+                </select>
+                <select class="filter-input" id="topabbyy-prod-sort" onchange="renderTopAbbyyFull()" style="max-width:150px">
+                  <option value="count">Sort: Line Count</option>
+                  <option value="earnings">Sort: Earnings</option>
+                  <option value="az">Name (A→Z)</option>
+                  <option value="za">Name (Z→A)</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('topabbyy-prod-search').value='';document.getElementById('topabbyy-prod-loc').value='';document.getElementById('topabbyy-prod-sort').value='count';renderTopAbbyyFull()">✕ Reset</button>
+                <button class="print-btn" onclick="printSection('topabbyy-prod-tbl','Top 10 Performers - Line Count + Earnings')">🖨️</button>
+                <button class="btn btn-green btn-sm" onclick="exportTableToExcel('topabbyy-prod-tbl','Top10_Performers_LineCount_Earnings')">📥 Excel</button>
+              </div>
+            </div>
+            <div class="scroll-wrap">
+              <div class="table-wrap scroll-y">
+                <table id="topabbyy-prod-tbl" class="insight-tbl">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Operator</th>
+                      <th>Line Count</th>
+                      <th>Earnings</th>
+                      <th style="text-align:center">ABBYY Errors</th>
+                      <th>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody id="topabbyy-prod-tbody">
+                    <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Highest error contributors (Primary Operator) -->
+          <div class="table-card" id="topabbyy-err-card">
+            <div class="table-header">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <div style="font-size:13px;font-weight:700">🔴 Top ABBYY Error Operators — Highest error contributors (Primary Operator)</div>
+                <span class="cnt-badge" id="topabbyy-err-badge" style="background:var(--red-light);color:var(--red);border-color:var(--red)">0</span>
+              </div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <input type="text" class="filter-input" id="topabbyy-err-search" placeholder="🔍 Search operator..." oninput="renderTopAbbyyFull()" style="width:170px">
+                <select class="filter-input" id="topabbyy-err-loc" onchange="renderTopAbbyyFull()" style="max-width:150px">
+                  <option value="">📍 All Locations</option>
+                  <option>Ahmedabad</option>
+                  <option>Karjan</option>
+                  <option>Vadodara</option>
+                  <option>Vadodara-WFH</option>
+                  <option>Mangalore</option>
+                  <option>Chennai</option>
+                </select>
+                <select class="filter-input" id="topabbyy-err-sort" onchange="renderTopAbbyyFull()" style="max-width:150px">
+                  <option value="errors">Sort: Errors</option>
+                  <option value="earnings-hi">Sort: Earnings (High)</option>
+                  <option value="earnings-lo">Sort: Earnings (Low)</option>
+                  <option value="az">Name (A→Z)</option>
+                  <option value="za">Name (Z→A)</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('topabbyy-err-search').value='';document.getElementById('topabbyy-err-loc').value='';document.getElementById('topabbyy-err-sort').value='errors';renderTopAbbyyFull()">✕ Reset</button>
+                <button class="print-btn" onclick="printSection('topabbyy-err-tbl','Top ABBYY Error Operators - Error Contributors')">🖨️</button>
+                <button class="btn btn-green btn-sm" onclick="exportTableToExcel('topabbyy-err-tbl','Top_ABBYY_Error_Contributors')">📥 Excel</button>
+              </div>
+            </div>
+            <div class="scroll-wrap">
+              <div class="table-wrap scroll-y">
+                <table id="topabbyy-err-tbl" class="insight-tbl">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Primary Operator</th>
+                      <th style="text-align:center">Error Count</th>
+                      <th>Earnings</th>
+                      <th>Location</th>
+                    </tr>
+                  </thead>
+                  <tbody id="topabbyy-err-tbody">
+                    <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ======================== REPORTS PAGE ======================== -->
         <div class="page" id="page-reports">
           <div class="page-title">Reports</div>
@@ -4799,6 +4907,46 @@
       const e2 = document.getElementById('top10-prod-tbody');
       e2.innerHTML = prodList.slice(0, 10).map(({ name, lc, earn, loc, abErr, xcErr }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; const emoji = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1); return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${emoji}</td><td style="font-weight:600">${esc(name)}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--green)">${lc.toLocaleString()}</strong></td><td>₹${(parseFloat(earn)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td style="text-align:center">${abErr > 0 ? `<span style="display:inline-flex;align-items:center;justify-content:center;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;min-width:36px">${abErr}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${cb}</td>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:10px">No data</td></tr>';
     }
+
+    // ============================================================
+    // TOP ABBYY ERROR OPERATORS — FULL DATA PAGE (unlimited rows, no top-10 cap)
+    // ============================================================
+    function renderTopAbbyyFull() {
+      const ab = getFiltered('abbyy'); const { data: src } = getSrc();
+
+      // Section 1: full production list — Line Count + Earnings
+      const s2 = (document.getElementById('topabbyy-prod-search')?.value || '').toLowerCase();
+      const loc2 = document.getElementById('topabbyy-prod-loc')?.value || '';
+      const sort2 = document.getElementById('topabbyy-prod-sort')?.value || 'count';
+      const oc = {}; const ocEarn = {}; const ocLoc = {};
+      src.forEach(r => { const n = r['User Name']; const loc = r['Location'] || ''; if (n) { if (!oc[n]) { oc[n] = 0; ocEarn[n] = 0; ocLoc[n] = ''; } oc[n] += (+r['Total Count'] || 0); ocEarn[n] += (+r['Total Earnings'] || 0); if (loc && !ocLoc[n]) ocLoc[n] = loc; } });
+      let prodList = Object.entries(oc).map(([name, lc]) => { const loc = ocLoc[name] || '—'; const earn = ocEarn[name] || 0; const abErr = ab.filter(a => sameName(a['Primary Operator'], name)).length; return { name, lc, earn, loc, abErr }; });
+      if (s2) prodList = prodList.filter(r => r.name.toLowerCase().includes(s2));
+      if (loc2) prodList = prodList.filter(r => r.loc === loc2);
+      if (sort2 === 'count') prodList.sort((a, b) => b.lc - a.lc); else if (sort2 === 'earnings') prodList.sort((a, b) => b.earn - a.earn); else if (sort2 === 'az') prodList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort2 === 'za') prodList.sort((a, b) => b.name.localeCompare(a.name));
+      const badge2 = document.getElementById('topabbyy-prod-badge'); if (badge2) badge2.textContent = prodList.length + ' operators';
+      const e2 = document.getElementById('topabbyy-prod-tbody');
+      if (e2) e2.innerHTML = prodList.map(({ name, lc, earn, loc, abErr }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${i + 1}</td><td style="font-weight:600">${esc(name)}</td><td><strong style="font-family:'Space Mono',monospace;color:var(--green)">${lc.toLocaleString()}</strong></td><td>₹${(parseFloat(earn) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td style="text-align:center">${abErr > 0 ? `<span style="display:inline-flex;align-items:center;justify-content:center;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;min-width:36px">${abErr}</span>` : '<span class="badge badge-green">0</span>'}</td><td>${cb}</td></tr>`; }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>';
+
+      // Section 2: full ABBYY error contributors list (Primary Operator)
+      const s1 = (document.getElementById('topabbyy-err-search')?.value || '').toLowerCase();
+      const loc1 = document.getElementById('topabbyy-err-loc')?.value || '';
+      const sort1 = document.getElementById('topabbyy-err-sort')?.value || 'errors';
+      const oErr = {}, oLoc = {}; ab.forEach(r => { const op = r['Primary Operator']; if (op && op.trim() && op !== '—') { oErr[op] = (oErr[op] || 0) + 1; const locKey = r['Location'] || r['Location 1'] || ''; if (locKey) { oLoc[op] = oLoc[op] || {}; oLoc[op][locKey] = (oLoc[op][locKey] || 0) + 1; } } });
+      let errList = Object.entries(oErr).map(([name, cnt]) => { return { name, cnt, earn: getEarnings(name), loc: oLoc[name] ? Object.entries(oLoc[name]).sort((a, b) => b[1] - a[1])[0][0] : '—' }; });
+      if (s1) errList = errList.filter(r => r.name.toLowerCase().includes(s1));
+      if (loc1) errList = errList.filter(r => r.loc === loc1);
+      if (sort1 === 'errors') errList.sort((a, b) => b.cnt - a.cnt); else if (sort1 === 'az') errList.sort((a, b) => a.name.localeCompare(b.name)); else if (sort1 === 'za') errList.sort((a, b) => b.name.localeCompare(a.name)); else if (sort1 === 'earnings-hi') errList.sort((a, b) => b.earn - a.earn); else if (sort1 === 'earnings-lo') errList.sort((a, b) => a.earn - b.earn);
+      const badge1 = document.getElementById('topabbyy-err-badge'); if (badge1) badge1.textContent = errList.length + ' operators';
+      const e1 = document.getElementById('topabbyy-err-tbody');
+      if (e1) e1.innerHTML = errList.map(({ name, cnt, earn, loc }, i) => { const cfg = CC[loc]; const cb = cfg ? `<span style="background:${cfg.l};color:${cfg.c};padding:1px 5px;border-radius:4px;font-size:9px;font-weight:700">${cfg.e} ${loc}</span>` : loc; return `<tr><td style="text-align:center;font-family:'Space Mono',monospace;font-size:10px">${i + 1}</td><td style="font-weight:600">${esc(name)}</td><td style="text-align:center"><span style="display:inline-flex;align-items:center;justify-content:center;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:7px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:2px 10px;min-width:36px">${cnt}</span></td><td>₹${(parseFloat(earn) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${cb}</td></tr>`; }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No data</td></tr>';
+    }
+    window.renderTopAbbyyFull = renderTopAbbyyFull;
+    const _origShowPageTopAbbyy = window.showPage;
+    window.showPage = function(name, btn) {
+      _origShowPageTopAbbyy(name, btn);
+      if (name === 'topabbyy') setTimeout(renderTopAbbyyFull, 60);
+    };
 
     // ============================================================
     // CHARTS (unchanged)
